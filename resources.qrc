@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/dist_cartogram" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>
