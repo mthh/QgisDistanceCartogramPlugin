@@ -22,7 +22,7 @@
  ***************************************************************************/
 """
 from PyQt5.QtCore import (
-        QSettings, QTranslator, qVersion, QCoreApplication, QVariant, Qt, QThread)
+    QSettings, QTranslator, qVersion, QCoreApplication, QVariant, Qt, QThread)
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QAction,
@@ -87,7 +87,7 @@ class DistCartogram:
         # Create the dialog (after translation) and keep reference
         self.dlg = DistCartogramDialog()
 
-        # 
+        #
         self.dlg.pointLayerComboBox.setFilters(
             QgsMapLayerProxyModel.PointLayer)
         self.dlg.pointLayerComboBox.layerChanged.connect(
@@ -129,18 +129,17 @@ class DistCartogram:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('DistCartogram', message)
 
-
     def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
+            self,
+            icon_path,
+            text,
+            callback,
+            enabled_flag=True,
+            add_to_menu=True,
+            add_to_toolbar=True,
+            status_tip=None,
+            whats_this=None,
+            parent=None):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -213,7 +212,6 @@ class DistCartogram:
             callback=self.run,
             parent=self.iface.mainWindow())
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -231,9 +229,9 @@ class DistCartogram:
     def read_matrix(self, filepath):
         col_ix = {}
         line_ix = {}
-        with open(filepath,'r') as dest_f:
+        with open(filepath, 'r') as dest_f:
             data_iter = csv.reader(
-                    dest_f, quotechar = '"')
+                dest_f, quotechar='"')
             header = next(data_iter)
             zz = 0
             for i, _id in enumerate(header):
@@ -283,10 +281,14 @@ class DistCartogram:
         else:
             self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
 
-
-    def startWorker(self, source_to_use, image_to_use, precision, max_extent, background_layer):
+    def startWorker(self, source_to_use, image_to_use, precision, max_extent, layers):
         worker = DistCartogramWorker(
-            source_to_use, image_to_use, precision, max_extent, background_layer)
+            source_to_use,
+            image_to_use,
+            precision,
+            max_extent,
+            layers,
+            self.display)
         thread = QThread()
         worker.moveToThread(thread)
 
@@ -332,25 +334,25 @@ class DistCartogram:
 
     def cartogram_complete(
             self,
-            result_layer=None,
+            result_layers=None,
             source_grid_layer=None,
             trans_grid_layer=None):
-        if result_layer is not None:
-            if self.display_source_grid:
+        if result_layers is not None:
+            if self.display['source_grid']:
                 QgsProject.instance().addMapLayer(source_grid_layer)
-            if self.display_trans_grid:
+            if self.display['trans_grid']:
                 QgsProject.instance().addMapLayer(trans_grid_layer)
 
-            QgsProject.instance().addMapLayer(result_layer)
-            if self.display_image_points:
+            for result_layer in result_layers:
+                QgsProject.instance().addMapLayer(result_layer)
+
+            if self.display['image_points']:
                 QgsProject.instance().addMapLayer(self.image_layer)
 
             self.iface.messageBar().popWidget(self.messageBarItem)
-
         else:
             QgsMessageLog.logMessage(
-                self.tr("DistCartogram computation cancelled by user")
-            )
+                self.tr("DistCartogram computation cancelled by user"))
 
     def run(self):
         """Run method that performs all the real work"""
@@ -372,9 +374,11 @@ class DistCartogram:
             idx = self.line_ix
 
             #
-            self.display_source_grid = self.dlg.checkBoxSourceGrid.isChecked()
-            self.display_trans_grid = self.dlg.checkBoxTransformedGrid.isChecked()
-            self.display_image_points = self.dlg.checkBoxImagePointLayer.isChecked()
+            self.display = {
+                'source_grid': self.dlg.checkBoxSourceGrid.isChecked(),
+                'trans_grid': self.dlg.checkBoxTransformedGrid.isChecked(),
+                'image_points': self.dlg.checkBoxImagePointLayer.isChecked(),
+            }
 
             # set up all widgets for status reporting
             self.progressBar = QProgressBar()
@@ -402,46 +406,26 @@ class DistCartogram:
             self.updateStatusMessage(self.tr("Starting"))
 
             max_extent = background_layer.extent()
-            max_extent =  (
+            max_extent = (
                 max_extent.xMinimum(),
                 max_extent.yMinimum(),
                 max_extent.xMaximum(),
                 max_extent.yMaximum(),
-                )
+            )
 
             self.updateProgressBar(10)
 
             source_to_use, image_to_use, image_layer = \
-                get_image_points(source_layer, id_field, mat_extract, id_ref_feature, idx, self.display_image_points)
+                get_image_points(source_layer, id_field,
+                                 mat_extract, id_ref_feature,
+                                 idx, self.display['image_points'])
             self.image_layer = image_layer
             self.updateProgressBar(20)
 
-            self.startWorker(source_to_use, image_to_use, precision, max_extent, background_layer)
+            self.startWorker(source_to_use, image_to_use,
+                             precision, max_extent, [background_layer])
             self.updateStatusMessage(self.tr("Running in background ..."))
-#            _get_inter_nb_iter = \
-#                lambda coef_iter: int(coef_iter * sqrt(len(source_to_use)))
-#            self.g = Grid(source_to_use, precision, max_extent)
-#            self.g.interpolate(image_to_use, _get_inter_nb_iter(4))
-#            self.updateProgressBar(20)
-#            result_layer = get_transformed_layer(background_layer, self.g)
-#            self.updateProgressBar(20)
 
-#            if self.display_source_grid:
-#                polys = self.g._get_grid_coords('source')
-#                grid_layer = make_grid_layer(polys, source_layer.crs(), 'source')
-#                QgsProject.instance().addMapLayer(grid_layer)
-#
-#            if self.display_trans_grid:
-#                polys = self.g._get_grid_coords('interp')
-#                grid_layer = make_grid_layer(polys, source_layer.crs(), 'interp')
-#                QgsProject.instance().addMapLayer(grid_layer)
-#            self.updateProgressBar(20)
-#            QgsProject.instance().addMapLayer(result_layer)
-#
-#            if self.display_image_points:
-#                QgsProject.instance().addMapLayer(image_layer)
-#
-#            self.iface.messageBar().popWidget(self.messageBarItem)
 
 def get_image_points(
         source_layer,
@@ -462,18 +446,21 @@ def get_image_points(
             "dist_euclidienne": None,
             "deplacement": None,
             "time": mat_extract[idx[ft[id_field]]],
-            }
+        }
     ref_geometry = source_layer_dict[id_ref_feature]['geometry']
     for ix in source_layer_dict.keys():
-        if ix == id_ref_feature: continue
+        if ix == id_ref_feature:
+            continue
         source_layer_dict[ix]['dist_euclidienne'] = \
             ref_geometry.distance(source_layer_dict[ix]['geometry'])
         source_layer_dict[ix]['vitesse'] = \
-            source_layer_dict[ix]['dist_euclidienne'] / source_layer_dict[ix]['time']
+            source_layer_dict[ix]['dist_euclidienne'] / \
+            source_layer_dict[ix]['time']
     ref_vitesse = np.nanmedian(
         [i['vitesse'] for i in source_layer_dict.values() if 'vitesse' in i])
     for ix in source_layer_dict.keys():
-        if ix == id_ref_feature: continue
+        if ix == id_ref_feature:
+            continue
         source_layer_dict[ix]['deplacement'] = \
             ref_vitesse / source_layer_dict[ix]['vitesse']
     source_to_use, image_to_use = [], []
@@ -511,8 +498,9 @@ def get_image_points(
         image_to_use.append(Point(_coords[0], _coords[1]))
 
     if display_image_points:
-        image_layer =  QgsVectorLayer(
-            "Point?crs={}&field={}:{}".format(source_layer.crs().authid(), id_field, type_id_field),
+        image_layer = QgsVectorLayer(
+            "Point?crs={}&field={}:{}".format(
+                source_layer.crs().authid(), id_field, type_id_field),
             "image_layer",
             "memory")
 
@@ -525,4 +513,3 @@ def get_image_points(
             image_layer.addFeature(feature, QgsFeatureSink.FastInsert)
         image_layer.commitChanges()
     return (source_to_use, image_to_use, image_layer)
-

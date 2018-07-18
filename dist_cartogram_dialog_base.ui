@@ -77,7 +77,7 @@
        </size>
       </property>
       <property name="minimum">
-       <double>0.800000000000000</double>
+       <double>0.500000000000000</double>
       </property>
       <property name="maximum">
        <double>5.000000000000000</double>
@@ -246,13 +246,6 @@
     </item>
    </layout>
   </widget>
-  <zorder>button_box</zorder>
-  <zorder>label_5</zorder>
-  <zorder>gridLayoutWidget</zorder>
-  <zorder>verticalSpacer</zorder>
-  <zorder>checkBoxTransformedGrid</zorder>
-  <zorder>checkBoxImagePointLayer</zorder>
-  <zorder>checkBoxResult</zorder>
  </widget>
  <customwidgets>
   <customwidget>
