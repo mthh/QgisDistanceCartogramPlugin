@@ -34,7 +34,8 @@ from qgis.core import (
     QgsFeatureSink,
     QgsGeometry,
     QgsPointXY,
-    QgsVectorLayer
+    QgsVectorLayer,
+    QgsWkbTypes
 )
 
 from .grid import Grid
@@ -45,7 +46,7 @@ class DistCartogramWorker(QObject):
     finished = pyqtSignal()
     error = pyqtSignal(Exception, str)
     progress = pyqtSignal(int)
-#    status = pyqtSignal(str)
+    status = pyqtSignal(str)
 
     def __init__(self,
                  src_pts,
@@ -66,20 +67,37 @@ class DistCartogramWorker(QObject):
     def get_transformed_layers(self):
         transformed_layers = []
         for background_layer in self.layers_to_transform:
+            _t = QgsWkbTypes.displayString(background_layer.wkbType())
+            if not 'Multi' in _t:
+                _t = 'Multi' + _t
             result_layer = QgsVectorLayer(
-                "MultiPolygon?crs={}".format(background_layer.crs().authid()),
+                "{}?crs={}".format(_t, background_layer.crs().authid()),
                 "result_cartogram",
                 "memory")
-
             pr_result_layer = result_layer.dataProvider()
             pr_result_layer.addAttributes(background_layer.fields().toList())
             result_layer.updateFields()
             result_layer.startEditing()
             result_layer.setCrs(background_layer.crs())
-            for ft in background_layer.getFeatures():
+            for ix, ft in enumerate(background_layer.getFeatures()):
                 ref_geom = ft.geometry()
                 ref_coords = ref_geom.__geo_interface__['coordinates']
-                if ref_geom.__geo_interface__['type'] == 'Polygon':
+                if ref_geom.__geo_interface__['type'] == 'LineString':
+                    new_geom = QgsGeometry.fromPolyLineXY([
+                        QgsPointXY(
+                            *self.g._interp_point(*ref_coords[ix_coords]))
+                        for ix_coords in range(len(ref_coords))
+                    ])
+                elif ref_geom.__geo_interface__['type'] == 'MultiLineString':
+                    lines = []
+                    for ix_line in range(len(ref_coords)):
+                        lines.append([
+                            QgsPointXY(
+                                *self.g._interp_point(*ref_coords[ix_line][ix_coords]))
+                            for ix_coords in range(len(ref_coords[ix_line]))
+                        ])
+                    new_geom = QgsGeometry.fromMultiPolylineXY(lines)
+                elif ref_geom.__geo_interface__['type'] == 'Polygon':
                     rings = []
                     for ix_ring in range(len(ref_coords)):
                         rings.append([
@@ -102,6 +120,9 @@ class DistCartogramWorker(QObject):
                             ])
                         polys.append(rings)
                     new_geom = QgsGeometry.fromMultiPolygonXY(polys)
+                else:
+                    self.status.emit('Geometry type error')
+                    continue
                 feature = QgsFeature()
                 feature.setGeometry(new_geom)
                 feature.setAttributes(ft.attributes())

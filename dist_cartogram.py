@@ -94,7 +94,7 @@ class DistCartogram:
             self.fill_field_combo_box)
 
         self.dlg.backgroundLayerComboBox.setFilters(
-            QgsMapLayerProxyModel.PolygonLayer)
+            QgsMapLayerProxyModel.LineLayer | QgsMapLayerProxyModel.PolygonLayer)
         self.dlg.backgroundLayerComboBox.layerChanged.connect(
             self.state_ok_button)
 
@@ -297,7 +297,7 @@ class DistCartogram:
         worker.resultComplete.connect(self.cartogram_complete)
         worker.error.connect(self.workerError)
         worker.progress.connect(self.updateProgressBar)
-
+        worker.status.connect(self.updateStatusMessage)
         thread.started.connect(worker.run)
         thread.start()
 
@@ -394,7 +394,8 @@ class DistCartogram:
             cancelButton.clicked.connect(self.stopWorker)
 
             self.messageBarItem = self.iface.messageBar().createMessage("")
-            for widget in [self.statusMessageLabel, self.progressBar, cancelButton]:
+            for widget in [
+                    self.statusMessageLabel, self.progressBar, cancelButton]:
                 self.messageBarItem.layout().addWidget(widget)
 
             self.iface.messageBar().pushWidget(
@@ -405,12 +406,17 @@ class DistCartogram:
             self.updateProgressBar()
             self.updateStatusMessage(self.tr("Starting"))
 
-            max_extent = background_layer.extent()
+            extent_bg_layer = background_layer.extent()
+            extent_source_layer = source_layer.extent()
             max_extent = (
-                max_extent.xMinimum(),
-                max_extent.yMinimum(),
-                max_extent.xMaximum(),
-                max_extent.yMaximum(),
+                min(extent_bg_layer.xMinimum(),
+                    extent_source_layer.xMinimum()),
+                min(extent_bg_layer.yMinimum(),
+                    extent_source_layer.yMinimum()),
+                max(extent_bg_layer.xMaximum(),
+                    extent_source_layer.xMaximum()),
+                max(extent_bg_layer.yMaximum(),
+                    extent_source_layer.yMaximum())
             )
 
             self.updateProgressBar(10)
