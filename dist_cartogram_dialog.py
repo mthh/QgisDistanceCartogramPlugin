@@ -25,11 +25,7 @@
 from PyQt5 import QtWidgets
 from .dist_cartogram_dialog_baseUi import Ui_DistCartogramDialogBase
 
-# FORM_CLASS, _ = uic.loadUiType(os.path.join(
-#     os.path.dirname(__file__), 'dist_cartogram_dialog_base.ui'))
 
-
-# class DistCartogramDialog(QtWidgets.QDialog, FORM_CLASS):
 class DistCartogramDialog(QtWidgets.QDialog, Ui_DistCartogramDialogBase):
     def __init__(self, parent=None):
         """Constructor."""

@@ -44,11 +44,14 @@ PLUGINNAME = dist_cartogram
 
 PY_FILES = \
 	__init__.py \
-	dist_cartogram.py grid.py dist_cartogram_dialog.py dist_cartogram_dialog_baseUi.py
+	dist_cartogram.py grid.py \
+    dist_cartogram_dialog.py \
+    dist_cartogram_dialog_baseUi.py \
+    worker.py
 
-UI_FILES = dist_cartogram_dialog_base.ui
+# UI_FILES = dist_cartogram_dialog_base.ui
 
-EXTRAS = metadata.txt icon.png
+EXTRAS = metadata.txt icon.png LICENSE
 
 EXTRA_DIRS =
 
@@ -81,7 +84,7 @@ compile: $(COMPILED_RESOURCE_FILES)
 %.qm : %.ts
 	$(LRELEASE) $<
 
-test: compile transcompile
+test: compile # transcompile
 	@echo
 	@echo "----------------------"
 	@echo "Regression Test Suite"
@@ -99,7 +102,7 @@ test: compile transcompile
 	@echo "e.g. source run-env-linux.sh <path to qgis install>; make test"
 	@echo "----------------------"
 
-deploy: compile doc transcompile
+deploy: compile doc # transcompile
 	@echo
 	@echo "------------------------------------------"
 	@echo "Deploying plugin to your .qgis2 directory."
@@ -109,7 +112,7 @@ deploy: compile doc transcompile
 	# $HOME/$(QGISDIR)/python/plugins
 	mkdir -p $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(PY_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
-	cp -vf $(UI_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
+	# cp -vf $(UI_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(COMPILED_RESOURCE_FILES) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vf $(EXTRAS) $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
 	cp -vfr i18n $(HOME)/$(QGISDIR)/python/plugins/$(PLUGINNAME)
@@ -167,21 +170,21 @@ upload: zip
 	@echo "-------------------------------------"
 	$(PLUGIN_UPLOAD) $(PLUGINNAME).zip
 
-transup:
-	@echo
-	@echo "------------------------------------------------"
-	@echo "Updating translation files with any new strings."
-	@echo "------------------------------------------------"
-	@chmod +x scripts/update-strings.sh
-	@scripts/update-strings.sh $(LOCALES)
-
-transcompile:
-	@echo
-	@echo "----------------------------------------"
-	@echo "Compiled translation files to .qm files."
-	@echo "----------------------------------------"
-	@chmod +x scripts/compile-strings.sh
-	@scripts/compile-strings.sh $(LRELEASE) $(LOCALES)
+# transup:
+# 	@echo
+# 	@echo "------------------------------------------------"
+# 	@echo "Updating translation files with any new strings."
+# 	@echo "------------------------------------------------"
+# 	@chmod +x scripts/update-strings.sh
+# 	@scripts/update-strings.sh $(LOCALES)
+#
+# transcompile:
+# 	@echo
+# 	@echo "----------------------------------------"
+# 	@echo "Compiled translation files to .qm files."
+# 	@echo "----------------------------------------"
+# 	@chmod +x scripts/compile-strings.sh
+# 	@scripts/compile-strings.sh $(LRELEASE) $(LOCALES)
 
 transclean:
 	@echo
