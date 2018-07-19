@@ -49,6 +49,7 @@ from .dist_cartogram_dialog import DistCartogramDialog
 from .grid import Point, Grid, extrapole_line
 from .worker import DistCartogramWorker
 from math import sqrt
+from os.path import exists
 import numpy as np
 import json
 import csv
@@ -226,9 +227,23 @@ class DistCartogram:
         self.dlg.mFieldComboBox.setLayer(layer)
         self.state_ok_button()
 
+    def check_values_id_field(self, layer, id_field):
+        if not hasattr(self, 'col_ix'):
+            return
+        ids = [ft[id_field] for ft in layer.getFeatures()]
+        if not any(_id in self.col_ix for _id in ids):
+            self.iface.messageBar().pushCritical(
+                self.tr("Error"),
+                self.tr("No match between ids"))
+            return False
+        return True
+
     def read_matrix(self, filepath):
         col_ix = {}
         line_ix = {}
+        if not exists(filepath):
+            # TODO: 
+            pass
         with open(filepath, 'r') as dest_f:
             data_iter = csv.reader(
                 dest_f, quotechar='"')
@@ -243,7 +258,14 @@ class DistCartogram:
             for i, data in enumerate(data_iter):
                 d.append(data[1:])
                 line_ix[data[0]] = i
-            self.time_matrix = np.array(d, dtype=np.float)
+            try:
+                self.time_matrix = np.array(d, dtype=np.float)
+            except ValueError:
+                # TODO :
+                pass
+        if not all(k in line_ix for k in col_ix.keys()):
+            # TODO :
+            pass
         self.dlg.refFeatureComboBox.clear()
         self.dlg.refFeatureComboBox.addItems(col_ix.keys())
         self.col_ix = col_ix
@@ -276,7 +298,10 @@ class DistCartogram:
         c = self.dlg.refFeatureComboBox.currentIndex()
         d = self.dlg.mFieldComboBox.currentIndex()
 
-        if a == -1 or b == -1 or c == -1 or d == -1:
+        if a == -1 or b == -1 or c == -1 or d == -1 \
+                or not self.check_values_id_field(
+                        self.dlg.pointLayerComboBox.currentLayer(),
+                        self.dlg.mFieldComboBox.currentField()):
             self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
         else:
             self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(True)

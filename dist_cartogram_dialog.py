@@ -23,8 +23,10 @@
 """
 
 from PyQt5 import QtWidgets
-from .dist_cartogram_dialog_baseUi import Ui_DistCartogramDialogBase
-
+try:
+    from .dist_cartogram_dialog_baseUi import Ui_DistCartogramDialogBase
+except:
+    from dist_cartogram_dialog_baseUi import Ui_DistCartogramDialogBase
 
 class DistCartogramDialog(QtWidgets.QDialog, Ui_DistCartogramDialogBase):
     def __init__(self, parent=None):

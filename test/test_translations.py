@@ -17,7 +17,6 @@ import unittest
 import os
 
 from PyQt5.QtCore import QCoreApplication, QTranslator
-
 QGIS_APP = get_qgis_app()
 
 
@@ -39,13 +38,16 @@ class SafeTranslationsTest(unittest.TestCase):
         parent_path = os.path.join(__file__, os.path.pardir, os.path.pardir)
         dir_path = os.path.abspath(parent_path)
         file_path = os.path.join(
-            dir_path, 'i18n', 'af.qm')
+            dir_path, 'i18n', 'DistCartogram_fr.qm')
+        app = QCoreApplication([])
         translator = QTranslator()
         translator.load(file_path)
+
         QCoreApplication.installTranslator(translator)
 
-        expected_message = 'Goeie more'
-        real_message = QCoreApplication.translate("@default", 'Good morning')
+        expected_message = 'Précision de la grille'
+        real_message = QCoreApplication.translate(
+            'DistCartogramDialogBase', 'Grid precision')
         self.assertEqual(real_message, expected_message)
 
 
