@@ -88,7 +88,10 @@ class DistCartogram:
         # Create the dialog (after translation) and keep reference
         self.dlg = DistCartogramDialog()
 
-        #
+        self.col_ix = None
+        self.line_ix = None
+        self.time_matrix = None
+
         self.dlg.pointLayerComboBox.setFilters(
             QgsMapLayerProxyModel.PointLayer)
         self.dlg.pointLayerComboBox.layerChanged.connect(
@@ -228,7 +231,7 @@ class DistCartogram:
         self.state_ok_button()
 
     def check_values_id_field(self, layer, id_field):
-        if not hasattr(self, 'col_ix'):
+        if not self.col_ix:
             return
         ids = [ft[id_field] for ft in layer.getFeatures()]
         if not any(_id in self.col_ix for _id in ids):
@@ -239,11 +242,20 @@ class DistCartogram:
         return True
 
     def read_matrix(self, filepath):
+        self.col_ix = None
+        self.line_ix = None
+        self.time_matrix = None
         col_ix = {}
         line_ix = {}
+
+        if not filepath:
+            return
         if not exists(filepath):
-            # TODO: 
-            pass
+            self.iface.messageBar().pushCritical(
+                self.tr("Error"),
+                self.tr("File not found"))
+            return
+
         with open(filepath, 'r') as dest_f:
             data_iter = csv.reader(
                 dest_f, quotechar='"')
@@ -260,12 +272,18 @@ class DistCartogram:
                 line_ix[data[0]] = i
             try:
                 self.time_matrix = np.array(d, dtype=np.float)
-            except ValueError:
-                # TODO :
-                pass
+            except ValueError as err:
+                self.push_error(
+                    err, "Error while reading the matrix - All values "
+                         "(excepting columns/lines id) must be numbers")
+                return
+
         if not all(k in line_ix for k in col_ix.keys()):
-            # TODO :
-            pass
+            self.time_matrix = None
+            self.push_error(
+                None, "Lines and columns index have to be the same")
+            return
+
         self.dlg.refFeatureComboBox.clear()
         self.dlg.refFeatureComboBox.addItems(col_ix.keys())
         self.col_ix = col_ix
@@ -277,13 +295,13 @@ class DistCartogram:
         except:
             pass
 
-    def updateProgressBar(self, increase=1):
-        try:
-            self.progressBar.setValue(
-                self.progressBar.value() + increase
-            )
-        except:
-            pass
+    # def updateProgressBar(self, increase=1):
+    #     try:
+    #         self.progressBar.setValue(
+    #             self.progressBar.value() + increase
+    #         )
+    #     except:
+    #         pass
 
     def reset_fields(self):
         self.dlg.pointLayerComboBox.setCurrentIndex(-1)
@@ -297,23 +315,22 @@ class DistCartogram:
         b = self.dlg.backgroundLayerComboBox.currentIndex()
         c = self.dlg.refFeatureComboBox.currentIndex()
         d = self.dlg.mFieldComboBox.currentIndex()
+        e = self.dlg.matrixQgsFileWidget.filePath()
 
         if a == -1 or b == -1 or c == -1 or d == -1 \
                 or not self.check_values_id_field(
                         self.dlg.pointLayerComboBox.currentLayer(),
-                        self.dlg.mFieldComboBox.currentField()):
+                        self.dlg.mFieldComboBox.currentField()) or not e:
+            print(a, b, c, d, e)
             self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
         else:
             self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
 
-    def startWorker(self, source_to_use, image_to_use, precision, max_extent, layers):
+    def startWorker(self, src_pts, img_pts, precision, max_extent, layers):
         worker = DistCartogramWorker(
-            source_to_use,
-            image_to_use,
-            precision,
-            max_extent,
-            layers,
-            self.display)
+            src_pts, img_pts,
+            precision, max_extent,
+            layers, self.display, self.tr)
         thread = QThread()
         worker.moveToThread(thread)
 
@@ -321,7 +338,7 @@ class DistCartogram:
         worker.finished.connect(self.workerFinished)
         worker.resultComplete.connect(self.cartogram_complete)
         worker.error.connect(self.workerError)
-        worker.progress.connect(self.updateProgressBar)
+        # worker.progress.connect(self.updateProgressBar)
         worker.status.connect(self.updateStatusMessage)
         thread.started.connect(worker.run)
         thread.start()
@@ -332,7 +349,7 @@ class DistCartogram:
     def stopWorker(self):
         self.worker.stopped = True
 
-    def workerError(self, e, exceptionString):
+    def push_error(self, e, exceptionString):
         self.iface.messageBar().pushCritical(
             self.tr("Error"),
             self.tr("An error occurred during distance cartogram creation. " +
@@ -344,6 +361,8 @@ class DistCartogram:
             tag="Plugins"
         )
 
+    def workerError(self, e, exceptionString):
+        self.push_error(e, exceptionString)
         self.workerFinished()
 
     def workerFinished(self):
@@ -388,8 +407,8 @@ class DistCartogram:
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
-            if not hasattr(self, 'time_matrix'):
-                self.read_matrix(self.dlg.matrixQgsFileWidget.filepath())
+            if self.time_matrix is None:
+                self.read_matrix(self.dlg.matrixQgsFileWidget.filePath())
             source_layer = self.dlg.pointLayerComboBox.currentLayer()
             background_layer = self.dlg.backgroundLayerComboBox.currentLayer()
             id_ref_feature = self.dlg.refFeatureComboBox.currentText()
@@ -406,9 +425,9 @@ class DistCartogram:
             }
 
             # set up all widgets for status reporting
-            self.progressBar = QProgressBar()
-            self.progressBar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            self.progressBar.setMaximum(100)
+            # self.progressBar = QProgressBar()
+            # self.progressBar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            # self.progressBar.setMaximum(100)
 
             self.statusMessageLabel = QLabel(self.tr("Starting..."))
             self.statusMessageLabel.setAlignment(
@@ -419,16 +438,12 @@ class DistCartogram:
             cancelButton.clicked.connect(self.stopWorker)
 
             self.messageBarItem = self.iface.messageBar().createMessage("")
-            for widget in [
-                    self.statusMessageLabel, self.progressBar, cancelButton]:
-                self.messageBarItem.layout().addWidget(widget)
+            self.messageBarItem.layout().addWidget(self.statusMessageLabel)
+            self.messageBarItem.layout().addWidget(cancelButton)
 
-            self.iface.messageBar().pushWidget(
-                self.messageBarItem,
-                Qgis.Info
-            )
+            self.iface.messageBar().pushWidget(self.messageBarItem, Qgis.Info)
 
-            self.updateProgressBar()
+            # self.updateProgressBar()
             self.updateStatusMessage(self.tr("Starting"))
 
             extent_bg_layer = background_layer.extent()
@@ -444,18 +459,17 @@ class DistCartogram:
                     extent_source_layer.yMaximum())
             )
 
-            self.updateProgressBar(10)
-
+            # self.updateProgressBar(10)
+            self.updateStatusMessage(
+                self.tr("1- Creation of image points layer"))
             source_to_use, image_to_use, image_layer = \
                 get_image_points(source_layer, id_field,
                                  mat_extract, id_ref_feature,
                                  idx, self.display['image_points'])
             self.image_layer = image_layer
-            self.updateProgressBar(20)
-
+            # self.updateProgressBar(20)
             self.startWorker(source_to_use, image_to_use,
                              precision, max_extent, [background_layer])
-            self.updateStatusMessage(self.tr("Running in background ..."))
 
 
 def get_image_points(

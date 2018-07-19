@@ -45,7 +45,7 @@ class DistCartogramWorker(QObject):
     resultComplete = pyqtSignal(list, object, object)
     finished = pyqtSignal()
     error = pyqtSignal(Exception, str)
-    progress = pyqtSignal(int)
+    # progress = pyqtSignal(int)
     status = pyqtSignal(str)
 
     def __init__(self,
@@ -54,7 +54,8 @@ class DistCartogramWorker(QObject):
                  precision,
                  extent,
                  layers_to_transform,
-                 to_display):
+                 to_display,
+                 tr):
         QObject.__init__(self)
 
         self.src_pts = src_pts
@@ -63,6 +64,7 @@ class DistCartogramWorker(QObject):
         self.extent = extent
         self.layers_to_transform = layers_to_transform
         self.to_display = to_display
+        self.tr = tr
 
     def get_transformed_layers(self):
         transformed_layers = []
@@ -136,12 +138,14 @@ class DistCartogramWorker(QObject):
             _get_inter_nb_iter = \
                 lambda coef_iter: int(
                     coef_iter * sqrt(len(self.src_pts)))
+            self.status.emit(self.tr('2 - Creation of interpolation grid...'))
             self.g = Grid(self.src_pts, self.precision, self.extent)
+            self.status.emit(self.tr('3 - Interpolation process...'))
             self.g.interpolate(self.image_pts, _get_inter_nb_iter(4))
-            self.progress.emit(10)
+            self.status.emit(self.tr('4 - Transforming layers...'))
             transformed_layers = self.get_transformed_layers()
-            self.progress.emit(10)
 
+            self.status.emit(self.tr('5 - Preparing results for displaying...'))
             if self.to_display['source_grid']:
                 polys = self.g._get_grid_coords('source')
                 source_grid_layer = make_grid_layer(

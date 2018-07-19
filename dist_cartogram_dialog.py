@@ -28,6 +28,7 @@ try:
 except:
     from dist_cartogram_dialog_baseUi import Ui_DistCartogramDialogBase
 
+
 class DistCartogramDialog(QtWidgets.QDialog, Ui_DistCartogramDialogBase):
     def __init__(self, parent=None):
         """Constructor."""

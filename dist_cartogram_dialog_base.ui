@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>723</width>
+    <width>799</width>
     <height>649</height>
    </rect>
   </property>
@@ -16,7 +16,7 @@
   <widget class="QDialogButtonBox" name="button_box">
    <property name="geometry">
     <rect>
-     <x>430</x>
+     <x>540</x>
      <y>600</y>
      <width>251</width>
      <height>32</height>
@@ -33,9 +33,9 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>20</y>
-     <width>701</width>
-     <height>31</height>
+     <y>10</y>
+     <width>751</width>
+     <height>41</height>
     </rect>
    </property>
    <property name="text">
@@ -45,20 +45,124 @@
   <widget class="QWidget" name="gridLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>0</x>
      <y>60</y>
-     <width>691</width>
-     <height>551</height>
+     <width>791</width>
+     <height>531</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="1">
-     <widget class="QgsMapLayerComboBox" name="pointLayerComboBox">
+    <property name="sizeConstraint">
+     <enum>QLayout::SetNoConstraint</enum>
+    </property>
+    <item row="0" column="1">
+     <widget class="QgsMapLayerComboBox" name="backgroundLayerComboBox">
       <property name="minimumSize">
        <size>
-        <width>450</width>
+        <width>350</width>
         <height>0</height>
        </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>490</width>
+        <height>16777215</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_3">
+      <property name="minimumSize">
+       <size>
+        <width>140</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>270</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>Path to a .csv document containing a time matrix between the points from the layer previously selected.</string>
+      </property>
+      <property name="text">
+       <string>Time matrix</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_8">
+      <property name="minimumSize">
+       <size>
+        <width>140</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>270</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Point layer id field</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QComboBox" name="refFeatureComboBox">
+      <property name="minimumSize">
+       <size>
+        <width>350</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>490</width>
+        <height>16777215</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QgsFieldComboBox" name="mFieldComboBox">
+      <property name="minimumSize">
+       <size>
+        <width>350</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>490</width>
+        <height>16777215</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_4">
+      <property name="minimumSize">
+       <size>
+        <width>140</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>270</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>The reference feature (it's location will stay unchanged)</string>
+      </property>
+      <property name="text">
+       <string>Reference feature</string>
       </property>
      </widget>
     </item>
@@ -87,86 +191,62 @@
       </property>
      </widget>
     </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="label_6">
-      <property name="text">
-       <string>Grid precision</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QgsFileWidget" name="matrixQgsFileWidget">
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_9">
       <property name="minimumSize">
        <size>
-        <width>450</width>
+        <width>140</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>16777215</width>
-        <height>39</height>
+        <width>270</width>
+        <height>60</height>
        </size>
       </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label_2">
       <property name="text">
-       <string>Point layer</string>
+       <string>Output</string>
       </property>
      </widget>
     </item>
-    <item row="6" column="0">
-     <widget class="QLabel" name="label_7">
-      <property name="text">
-       <string>Displacement factor</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QLabel" name="label_3">
-      <property name="text">
-       <string>Time matrix</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="1">
-     <widget class="QgsFieldComboBox" name="mFieldComboBox"/>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="label_8">
-      <property name="text">
-       <string>Point layer id field</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QgsMapLayerComboBox" name="backgroundLayerComboBox">
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_6">
       <property name="minimumSize">
        <size>
-        <width>450</width>
+        <width>140</width>
         <height>0</height>
        </size>
       </property>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QLabel" name="label">
+      <property name="maximumSize">
+       <size>
+        <width>270</width>
+        <height>16777215</height>
+       </size>
+      </property>
       <property name="text">
-       <string>Background layer</string>
+       <string>Grid precision</string>
       </property>
      </widget>
     </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="label_4">
-      <property name="text">
-       <string>Reference feature</string>
+    <item row="6" column="1">
+     <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+      <property name="minimumSize">
+       <size>
+        <width>100</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>200</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="value">
+       <double>1.000000000000000</double>
       </property>
      </widget>
-    </item>
-    <item row="4" column="1">
-     <widget class="QComboBox" name="refFeatureComboBox"/>
     </item>
     <item row="7" column="1">
      <layout class="QVBoxLayout" name="verticalLayout">
@@ -212,35 +292,95 @@
       </item>
      </layout>
     </item>
-    <item row="6" column="1">
-     <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_7">
       <property name="minimumSize">
        <size>
-        <width>100</width>
+        <width>140</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>200</width>
+        <width>270</width>
         <height>16777215</height>
        </size>
       </property>
-      <property name="value">
-       <double>1.000000000000000</double>
+      <property name="text">
+       <string>Displacement factor</string>
       </property>
      </widget>
     </item>
-    <item row="7" column="0">
-     <widget class="QLabel" name="label_9">
+    <item row="3" column="1">
+     <widget class="QgsFileWidget" name="matrixQgsFileWidget">
+      <property name="minimumSize">
+       <size>
+        <width>350</width>
+        <height>0</height>
+       </size>
+      </property>
       <property name="maximumSize">
        <size>
-        <width>16777215</width>
-        <height>60</height>
+        <width>490</width>
+        <height>39</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QgsMapLayerComboBox" name="pointLayerComboBox">
+      <property name="minimumSize">
+       <size>
+        <width>350</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>490</width>
+        <height>16777215</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="minimumSize">
+       <size>
+        <width>140</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>270</width>
+        <height>16777215</height>
        </size>
       </property>
       <property name="text">
-       <string>Output</string>
+       <string>Point layer</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
+      <property name="minimumSize">
+       <size>
+        <width>140</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>270</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>The layer to be deformed</string>
+      </property>
+      <property name="text">
+       <string>Background layer</string>
       </property>
      </widget>
     </item>
