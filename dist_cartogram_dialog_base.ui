@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>799</width>
-    <height>649</height>
+    <width>793</width>
+    <height>702</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <widget class="QDialogButtonBox" name="button_box">
    <property name="geometry">
     <rect>
-     <x>540</x>
-     <y>600</y>
+     <x>530</x>
+     <y>660</y>
      <width>251</width>
      <height>32</height>
     </rect>
@@ -34,7 +34,7 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>751</width>
+     <width>781</width>
      <height>41</height>
     </rect>
    </property>
@@ -230,7 +230,7 @@
      </widget>
     </item>
     <item row="6" column="1">
-     <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+     <widget class="QDoubleSpinBox" name="doubleSpinBoxDeplacement">
       <property name="minimumSize">
        <size>
         <width>100</width>
@@ -385,6 +385,30 @@
      </widget>
     </item>
    </layout>
+  </widget>
+  <widget class="QDialogButtonBox" name="button_box_help">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>660</y>
+     <width>91</width>
+     <height>32</height>
+    </rect>
+   </property>
+   <property name="standardButtons">
+    <set>QDialogButtonBox::Help</set>
+   </property>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>590</y>
+     <width>791</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="bottomVerticalLayout"/>
   </widget>
  </widget>
  <customwidgets>

@@ -22,34 +22,43 @@
  ***************************************************************************/
 """
 from PyQt5.QtCore import (
-    QSettings, QTranslator, qVersion, QCoreApplication, QVariant, Qt, QThread)
-from PyQt5.QtGui import QIcon
+    QCoreApplication,
+    QSettings,
+    Qt,
+    QThread,
+    QTranslator,
+    QUrl,
+    QVariant,
+    qVersion,
+)
+from PyQt5.QtGui import QIcon, QDesktopServices
 from PyQt5.QtWidgets import (
     QAction,
     QDialogButtonBox,
     QLabel,
+    QProgressBar,
     QPushButton,
-    QProgressBar
+    QSizePolicy,
 )
 from qgis.core import (
     Qgis,
     QgsFeature,
-    QgsVectorLayer,
-    QgsGeometry,
-    QgsPointXY,
-    QgsProject,
     QgsFeatureSink,
+    QgsGeometry,
     QgsMapLayerProxyModel,
     QgsMessageLog,
+    QgsPointXY,
+    QgsProject,
+    QgsVectorLayer,
 )
+from qgis.gui import QgsMessageBar
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
 from .dist_cartogram_dialog import DistCartogramDialog
-from .grid import Point, Grid, extrapole_line
+from .grid import Point, extrapole_line
 from .worker import DistCartogramWorker
-from math import sqrt
-from os.path import exists
+from os.path import exists, isdir
 import numpy as np
 import json
 import csv
@@ -88,6 +97,9 @@ class DistCartogram:
         # Create the dialog (after translation) and keep reference
         self.dlg = DistCartogramDialog()
 
+        self.dlg.msg_bar = QgsMessageBar()
+        self.dlg.msg_bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.dlg.bottomVerticalLayout.addWidget(self.dlg.msg_bar)
         self.col_ix = None
         self.line_ix = None
         self.time_matrix = None
@@ -98,7 +110,8 @@ class DistCartogram:
             self.fill_field_combo_box)
 
         self.dlg.backgroundLayerComboBox.setFilters(
-            QgsMapLayerProxyModel.LineLayer | QgsMapLayerProxyModel.PolygonLayer)
+            QgsMapLayerProxyModel.LineLayer
+            | QgsMapLayerProxyModel.PolygonLayer)
         self.dlg.backgroundLayerComboBox.layerChanged.connect(
             self.state_ok_button)
 
@@ -111,6 +124,8 @@ class DistCartogram:
 
         self.dlg.refFeatureComboBox.currentIndexChanged.connect(
             self.state_ok_button)
+
+        self.dlg.button_box_help.helpRequested.connect(self.show_help)
         # Declare instance attributes
         self.actions = []
         self.menu = self.tr(u'&DistCartogram')
@@ -226,6 +241,11 @@ class DistCartogram:
         # remove the toolbar
         del self.toolbar
 
+    def show_help(self):
+        """Display application help to the user."""
+        help_file = 'file:///{}/help/index.html'.format(self.plugin_dir)
+        QDesktopServices.openUrl(QUrl(help_file))
+
     def fill_field_combo_box(self, layer):
         self.dlg.mFieldComboBox.setLayer(layer)
         self.state_ok_button()
@@ -235,10 +255,13 @@ class DistCartogram:
             return
         ids = [ft[id_field] for ft in layer.getFeatures()]
         if not any(_id in self.col_ix for _id in ids):
-            self.iface.messageBar().pushCritical(
+            self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
-                self.tr("No match between ids"))
+                self.tr("No match between point layer ID and matrix ID"))
             return False
+        self.dlg.msg_bar.pushSuccess(
+            self.tr("Success"),
+            self.tr("Matches found between point layer ID and matrix ID"))
         return True
 
     def read_matrix(self, filepath):
@@ -250,10 +273,10 @@ class DistCartogram:
 
         if not filepath:
             return
-        if not exists(filepath):
-            self.iface.messageBar().pushCritical(
+        if not exists(filepath) or isdir(filepath):
+            self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
-                self.tr("File not found"))
+                self.tr("File {} not found".format(filepath)))
             return
 
         with open(filepath, 'r') as dest_f:
@@ -273,15 +296,18 @@ class DistCartogram:
             try:
                 self.time_matrix = np.array(d, dtype=np.float)
             except ValueError as err:
-                self.push_error(
-                    err, "Error while reading the matrix - All values "
-                         "(excepting columns/lines id) must be numbers")
+                self.dlg.msg_bar.pushCritical(
+                    self.tr("Error"),
+                    self.tr(
+                        "Error while reading the matrix - All values "
+                        "(excepting columns/lines id) must be numbers"))
                 return
 
         if not all(k in line_ix for k in col_ix.keys()):
             self.time_matrix = None
-            self.push_error(
-                None, "Lines and columns index have to be the same")
+            self.dlg.msg_bar.pushCritical(
+                self.tr("Error"),
+                self.tr("Lines and columns index have to be the same"))
             return
 
         self.dlg.refFeatureComboBox.clear()
@@ -304,11 +330,22 @@ class DistCartogram:
     #         pass
 
     def reset_fields(self):
-        self.dlg.pointLayerComboBox.setCurrentIndex(-1)
-        self.dlg.backgroundLayerComboBox.setCurrentIndex(-1)
-        self.dlg.refFeatureComboBox.setCurrentIndex(-1)
-        self.dlg.mFieldComboBox.setCurrentIndex(-1)
+        # self.dlg.pointLayerComboBox.setCurrentIndex(-1)
+        # self.dlg.backgroundLayerComboBox.setCurrentIndex(-1)
+        # self.dlg.refFeatureComboBox.setCurrentIndex(-1)
+        layer = self.dlg.pointLayerComboBox.currentLayer()
+        nb_field = self.dlg.mFieldComboBox.count()
+        if nb_field < 1 and layer:
+            self.fill_field_combo_box(layer)
         self.state_ok_button()
+
+
+    # def reset_fields(self):
+    #     self.dlg.pointLayerComboBox.setCurrentIndex(-1)
+    #     # self.dlg.backgroundLayerComboBox.setCurrentIndex(-1)
+    #     self.dlg.refFeatureComboBox.setCurrentIndex(-1)
+    #     self.dlg.mFieldComboBox.setCurrentIndex(-1)
+    #     self.state_ok_button()
 
     def state_ok_button(self):
         a = self.dlg.pointLayerComboBox.currentIndex()
@@ -415,6 +452,7 @@ class DistCartogram:
             id_field = self.dlg.mFieldComboBox.currentField()
             mat_extract = self.time_matrix[self.col_ix[id_ref_feature]]
             precision = self.dlg.doubleSpinBox.value()
+            deplacement_factor = self.dlg.doubleSpinBoxDeplacement.value()
             idx = self.line_ix
 
             #
@@ -465,7 +503,8 @@ class DistCartogram:
             source_to_use, image_to_use, image_layer = \
                 get_image_points(source_layer, id_field,
                                  mat_extract, id_ref_feature,
-                                 idx, self.display['image_points'])
+                                 idx, deplacement_factor,
+                                 self.display['image_points'])
             self.image_layer = image_layer
             # self.updateProgressBar(20)
             self.startWorker(source_to_use, image_to_use,
@@ -478,6 +517,7 @@ def get_image_points(
         mat_extract,
         id_ref_feature,
         idx,
+        factor,
         display_image_points):
     type_id_field = [
         i.typeName().lower()
@@ -527,11 +567,13 @@ def get_image_points(
         deplacement = item['deplacement']
         coords = json.loads(item['geometry'].asJson())['coordinates']
         if deplacement <= 1:
+            deplacement = 1 + (deplacement - 1) * factor
             li = QgsGeometry.fromWkt(
                 """LINESTRING ({} {}, {} {})"""
                 .format(p1[0], p1[1], coords[0], coords[1]))
             p = li.interpolate(deplacement * item['dist_euclidienne'])
         else:
+            deplacement = 1 + (deplacement - 1) * factor
             p2 = (coords[0], coords[1])
             li = extrapole_line(p1, p2, 10)
             p = li.interpolate(deplacement * item['dist_euclidienne'])
