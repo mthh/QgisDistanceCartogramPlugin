@@ -278,30 +278,42 @@ class DistCartogram:
                 self.tr("Error"),
                 self.tr("File {} not found".format(filepath)))
             return
-
-        with open(filepath, 'r') as dest_f:
-            data_iter = csv.reader(
-                dest_f, quotechar='"')
-            header = next(data_iter)
-            zz = 0
-            for i, _id in enumerate(header):
-                if i == 0 and _id == "":
-                    zz = -1
-                    continue
-                col_ix[_id] = i + zz
-            d = []
-            for i, data in enumerate(data_iter):
-                d.append(data[1:])
-                line_ix[data[0]] = i
-            try:
-                self.time_matrix = np.array(d, dtype=np.float)
-            except ValueError as err:
-                self.dlg.msg_bar.pushCritical(
-                    self.tr("Error"),
-                    self.tr(
-                        "Error while reading the matrix - All values "
-                        "(excepting columns/lines id) must be numbers"))
-                return
+        try:
+            with open(filepath, 'r') as dest_f:
+                data_iter = csv.reader(
+                    dest_f, quotechar='"')
+                header = next(data_iter)
+                zz = 0
+                for i, _id in enumerate(header):
+                    if i == 0 and _id == "":
+                        zz = -1
+                        continue
+                    col_ix[_id] = i + zz
+                d = []
+                for i, data in enumerate(data_iter):
+                    d.append(data[1:])
+                    line_ix[data[0]] = i
+                try:
+                    self.time_matrix = np.array(d, dtype=np.float)
+                except ValueError as err:
+                    self.dlg.msg_bar.pushCritical(
+                        self.tr("Error"),
+                        self.tr(
+                            "Error while reading the matrix - All values "
+                            "(excepting columns/lines id) must be numbers"))
+                    return
+        except Exception as err:
+            self.dlg.msg_bar.pushCritical(
+                self.tr("Error"),
+                self.tr("An unexpected error has occurred while reading the "
+                        "CSV matrix. Please see the “Plugins” section of the "
+                        "message log for details."))
+            QgsMessageLog.logMessage(
+                '{}: {}'.format(err.__class__, err),
+                level=Qgis.Critical,
+                tag="Plugins"
+            )
+            return
 
         if not all(k in line_ix for k in col_ix.keys()):
             self.time_matrix = None
@@ -484,6 +496,25 @@ class DistCartogram:
             # self.updateProgressBar()
             self.updateStatusMessage(self.tr("Starting"))
 
+            # self.updateProgressBar(10)
+            self.updateStatusMessage(
+                self.tr("1- Creation of image points layer"))
+            source_to_use, image_to_use, image_layer = \
+                get_image_points(source_layer, id_field,
+                                 mat_extract, id_ref_feature,
+                                 idx, deplacement_factor,
+                                 self.display['image_points'])
+
+            if len(source_to_use) == 0 or len(image_to_use) == 0:
+                self.iface.messageBar().pushCritical(
+                    self.tr("Error"),
+                    self.tr("DistCartogram: "
+                            "The \"image\" point layer is empty."
+                            "This is probably due to a problem of "
+                            "non-correspondence between the identifiers of the"
+                            " features the point layer and the identifiers in "
+                            "the provided matrix."))
+                return
             extent_bg_layer = background_layer.extent()
             extent_source_layer = source_layer.extent()
             max_extent = (
@@ -497,14 +528,6 @@ class DistCartogram:
                     extent_source_layer.yMaximum())
             )
 
-            # self.updateProgressBar(10)
-            self.updateStatusMessage(
-                self.tr("1- Creation of image points layer"))
-            source_to_use, image_to_use, image_layer = \
-                get_image_points(source_layer, id_field,
-                                 mat_extract, id_ref_feature,
-                                 idx, deplacement_factor,
-                                 self.display['image_points'])
             self.image_layer = image_layer
             # self.updateProgressBar(20)
             self.startWorker(source_to_use, image_to_use,
@@ -526,11 +549,14 @@ def get_image_points(
     ][0]
     source_layer_dict = {}
     for ft in source_layer.getFeatures():
-        source_layer_dict[ft[id_field]] = {
+        id_value = ft[id_field]
+        if id_value not in idx:
+            continue
+        source_layer_dict[id_value] = {
             "geometry": ft.geometry(),
             "dist_euclidienne": None,
             "deplacement": None,
-            "time": mat_extract[idx[ft[id_field]]],
+            "time": mat_extract[idx[id_value]],
         }
     ref_geometry = source_layer_dict[id_ref_feature]['geometry']
     for ix in source_layer_dict.keys():
