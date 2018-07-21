@@ -45,7 +45,7 @@ class DistCartogramWorker(QObject):
     resultComplete = pyqtSignal(list, object, object)
     finished = pyqtSignal()
     error = pyqtSignal(Exception, str)
-    # progress = pyqtSignal(int)
+    progress = pyqtSignal(int)
     status = pyqtSignal(str)
 
     def __init__(self,
@@ -129,6 +129,7 @@ class DistCartogramWorker(QObject):
                 feature.setGeometry(new_geom)
                 feature.setAttributes(ft.attributes())
                 result_layer.addFeature(feature, QgsFeatureSink.FastInsert)
+                self.progress.emit(1)
             result_layer.commitChanges()
             transformed_layers.append(result_layer)
         return transformed_layers
@@ -138,14 +139,16 @@ class DistCartogramWorker(QObject):
             _get_inter_nb_iter = \
                 lambda coef_iter: int(
                     coef_iter * sqrt(len(self.src_pts)))
-            self.status.emit(self.tr('2 - Creation of interpolation grid...'))
+            self.status.emit(self.tr('Creation of interpolation grid...'))
             self.g = Grid(self.src_pts, self.precision, self.extent)
-            self.status.emit(self.tr('3 - Interpolation process...'))
+            self.status.emit(self.tr('Interpolation process...'))
+            self.progress.emit(((self.precision * len(self.image_pts)) / 3))
             self.g.interpolate(self.image_pts, _get_inter_nb_iter(4))
-            self.status.emit(self.tr('4 - Transforming layers...'))
+            self.progress.emit(((self.precision * len(self.image_pts)) / 3))
+            self.status.emit(self.tr('Transforming layers...'))
             transformed_layers = self.get_transformed_layers()
 
-            self.status.emit(self.tr('5 - Preparing results for displaying...'))
+            self.status.emit(self.tr('Preparing results for displaying...'))
             if self.to_display['source_grid']:
                 polys = self.g._get_grid_coords('source')
                 source_grid_layer = make_grid_layer(
@@ -153,6 +156,7 @@ class DistCartogramWorker(QObject):
             else:
                 source_grid_layer = None
 
+            self.progress.emit(5)
             if self.to_display['trans_grid']:
                 polys = self.g._get_grid_coords('interp')
                 trans_grid_layer = make_grid_layer(

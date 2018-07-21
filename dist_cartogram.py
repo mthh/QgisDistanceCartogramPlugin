@@ -21,6 +21,11 @@
  *                                                                         *
  ***************************************************************************/
 """
+import numpy as np
+import json
+import csv
+import os.path
+
 from PyQt5.QtCore import (
     QCoreApplication,
     QSettings,
@@ -47,22 +52,17 @@ from qgis.core import (
     QgsGeometry,
     QgsMapLayerProxyModel,
     QgsMessageLog,
-    QgsPointXY,
     QgsProject,
     QgsVectorLayer,
 )
 from qgis.gui import QgsMessageBar
+
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
 from .dist_cartogram_dialog import DistCartogramDialog
 from .grid import Point, extrapole_line
 from .worker import DistCartogramWorker
-from os.path import exists, isdir
-import numpy as np
-import json
-import csv
-import os.path
 
 
 class DistCartogram:
@@ -104,6 +104,7 @@ class DistCartogram:
         self.line_ix = None
         self.time_matrix = None
 
+        # Params for first tab:
         self.dlg.pointLayerComboBox.setFilters(
             QgsMapLayerProxyModel.PointLayer)
         self.dlg.pointLayerComboBox.layerChanged.connect(
@@ -123,6 +124,29 @@ class DistCartogram:
             self.state_ok_button)
 
         self.dlg.refFeatureComboBox.currentIndexChanged.connect(
+            self.state_ok_button)
+
+        # Params for second tab:
+        self.dlg.pointLayerComboBox_2.setFilters(
+            QgsMapLayerProxyModel.PointLayer)
+        self.dlg.pointLayerComboBox_2.layerChanged.connect(
+            self.fill_field_combo_box_source)
+
+        self.dlg.imagePointLayerComboBox_2.setFilters(
+            QgsMapLayerProxyModel.PointLayer)
+        self.dlg.imagePointLayerComboBox_2.layerChanged.connect(
+            self.fill_field_combo_box_image)
+
+        self.dlg.backgroundLayerComboBox_2.setFilters(
+            QgsMapLayerProxyModel.LineLayer
+            | QgsMapLayerProxyModel.PolygonLayer)
+        self.dlg.backgroundLayerComboBox_2.layerChanged.connect(
+            self.state_ok_button)
+
+        self.dlg.mFieldComboBox_2.fieldChanged.connect(
+            self.state_ok_button)
+
+        self.dlg.mImageFieldComboBox_2.fieldChanged.connect(
             self.state_ok_button)
 
         self.dlg.button_box_help.helpRequested.connect(self.show_help)
@@ -250,6 +274,14 @@ class DistCartogram:
         self.dlg.mFieldComboBox.setLayer(layer)
         self.state_ok_button()
 
+    def fill_field_combo_box_source(self, layer):
+        self.dlg.mFieldComboBox_2.setLayer(layer)
+        self.state_ok_button()
+
+    def fill_field_combo_box_image(self, layer):
+        self.dlg.mImageFieldComboBox_2.setLayer(layer)
+        self.state_ok_button()
+
     def check_values_id_field(self, layer, id_field):
         if not self.col_ix:
             return
@@ -264,6 +296,30 @@ class DistCartogram:
             self.tr("Matches found between point layer ID and matrix ID"))
         return True
 
+    def check_match_id_image_source(
+            self,
+            src_lyr,
+            src_id_field,
+            img_lyr,
+            img_id_field):
+        source_ids = [ft[src_id_field] for ft in src_lyr.getFeatures()]
+        image_ids = [ft[img_id_field] for ft in img_lyr.getFeatures()]
+        set_source_ids = set(source_ids)
+        set_image_ids = set(image_ids)
+        if len(source_ids) != len(set_source_ids) \
+                or len(image_ids) != len(set_image_ids):
+            self.dlg.msg_bar.pushCritical(
+                self.tr("Error"),
+                self.tr("Identifiant values have to be uniques"))
+            return False
+        if len(set_source_ids.intersection(set_image_ids)) < 3:
+            self.dlg.msg_bar.pushCritical(
+                self.tr("Error"),
+                self.tr("Not enough matching features between "
+                        "source and image layer"))
+            return False
+        return True
+
     def read_matrix(self, filepath):
         self.col_ix = None
         self.line_ix = None
@@ -273,7 +329,7 @@ class DistCartogram:
 
         if not filepath:
             return
-        if not exists(filepath) or isdir(filepath):
+        if not os.path.exists(filepath) or os.path.isdir(filepath):
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
                 self.tr("File {} not found".format(filepath)))
@@ -333,13 +389,13 @@ class DistCartogram:
         except:
             pass
 
-    # def updateProgressBar(self, increase=1):
-    #     try:
-    #         self.progressBar.setValue(
-    #             self.progressBar.value() + increase
-    #         )
-    #     except:
-    #         pass
+    def updateProgressBar(self, increase=1):
+        try:
+            self.progressBar.setValue(
+                self.progressBar.value() + increase
+            )
+        except:
+            pass
 
     def reset_fields(self):
         # self.dlg.pointLayerComboBox.setCurrentIndex(-1)
@@ -349,31 +405,53 @@ class DistCartogram:
         nb_field = self.dlg.mFieldComboBox.count()
         if nb_field < 1 and layer:
             self.fill_field_combo_box(layer)
+        layer_source = self.dlg.pointLayerComboBox.currentLayer()
+        nb_field = self.dlg.mFieldComboBox_2.count()
+        if nb_field < 1 and layer_source:
+            self.fill_field_combo_box_source(layer_source)
+        layer_image = self.dlg.pointLayerComboBox.currentLayer()
+        nb_field = self.dlg.mImageFieldComboBox_2.count()
+        if nb_field < 1 and layer_image:
+            self.fill_field_combo_box_image(layer_image)
         self.state_ok_button()
 
-
-    # def reset_fields(self):
-    #     self.dlg.pointLayerComboBox.setCurrentIndex(-1)
-    #     # self.dlg.backgroundLayerComboBox.setCurrentIndex(-1)
-    #     self.dlg.refFeatureComboBox.setCurrentIndex(-1)
-    #     self.dlg.mFieldComboBox.setCurrentIndex(-1)
-    #     self.state_ok_button()
-
     def state_ok_button(self):
-        a = self.dlg.pointLayerComboBox.currentIndex()
-        b = self.dlg.backgroundLayerComboBox.currentIndex()
-        c = self.dlg.refFeatureComboBox.currentIndex()
-        d = self.dlg.mFieldComboBox.currentIndex()
-        e = self.dlg.matrixQgsFileWidget.filePath()
+        result = False
+        if self.dlg.gridTabWidget.currentIndex() == 0:
+            a = self.dlg.pointLayerComboBox.currentIndex()
+            b = self.dlg.backgroundLayerComboBox.currentIndex()
+            c = self.dlg.refFeatureComboBox.currentIndex()
+            d = self.dlg.mFieldComboBox.currentIndex()
+            e = self.dlg.matrixQgsFileWidget.filePath()
 
-        if a == -1 or b == -1 or c == -1 or d == -1 \
-                or not self.check_values_id_field(
-                        self.dlg.pointLayerComboBox.currentLayer(),
-                        self.dlg.mFieldComboBox.currentField()) or not e:
-            print(a, b, c, d, e)
-            self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
+            if a == -1 or b == -1 or c == -1 or d == -1 \
+                    or not self.check_values_id_field(
+                            self.dlg.pointLayerComboBox.currentLayer(),
+                            self.dlg.mFieldComboBox.currentField()) or not e:
+                result = False
+            else:
+                result = True
+
         else:
-            self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(True)
+            a = self.dlg.backgroundLayerComboBox_2.currentIndex()
+            b = self.dlg.pointLayerComboBox_2.currentIndex()
+            c = self.dlg.mFieldComboBox_2.currentIndex()
+            d = self.dlg.imagePointLayerComboBox_2.currentIndex()
+            e = self.dlg.mImageFieldComboBox_2.currentIndex()
+
+            if a == -1 or b == -1 or c == -1 or d == -1 or e == -1 \
+                    or not self.check_match_id_image_source(
+                            self.dlg.pointLayerComboBox_2.currentLayer(),
+                            self.dlg.mFieldComboBox_2.currentField(),
+                            self.dlg.imagePointLayerComboBox_2.currentLayer(),
+                            self.dlg.mImageFieldComboBox_2.currentField()):
+                print(a, b, c, d, e)
+                result = False
+            else:
+                result = True
+
+            self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(result)
+
 
     def startWorker(self, src_pts, img_pts, precision, max_extent, layers):
         worker = DistCartogramWorker(
@@ -387,7 +465,7 @@ class DistCartogram:
         worker.finished.connect(self.workerFinished)
         worker.resultComplete.connect(self.cartogram_complete)
         worker.error.connect(self.workerError)
-        # worker.progress.connect(self.updateProgressBar)
+        worker.progress.connect(self.updateProgressBar)
         worker.status.connect(self.updateStatusMessage)
         thread.started.connect(worker.run)
         thread.start()
@@ -430,6 +508,9 @@ class DistCartogram:
             result_layers=None,
             source_grid_layer=None,
             trans_grid_layer=None):
+        if hasattr(self, 'worker') and hasattr(self.worker, 'stopped') \
+                and self.worker.stopped:
+            return
         if result_layers is not None:
             if self.display['source_grid']:
                 QgsProject.instance().addMapLayer(source_grid_layer)
@@ -456,82 +537,166 @@ class DistCartogram:
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
-            if self.time_matrix is None:
-                self.read_matrix(self.dlg.matrixQgsFileWidget.filePath())
-            source_layer = self.dlg.pointLayerComboBox.currentLayer()
-            background_layer = self.dlg.backgroundLayerComboBox.currentLayer()
-            id_ref_feature = self.dlg.refFeatureComboBox.currentText()
-            id_field = self.dlg.mFieldComboBox.currentField()
-            mat_extract = self.time_matrix[self.col_ix[id_ref_feature]]
-            precision = self.dlg.doubleSpinBox.value()
-            deplacement_factor = self.dlg.doubleSpinBoxDeplacement.value()
-            idx = self.line_ix
-
-            #
-            self.display = {
-                'source_grid': self.dlg.checkBoxSourceGrid.isChecked(),
-                'trans_grid': self.dlg.checkBoxTransformedGrid.isChecked(),
-                'image_points': self.dlg.checkBoxImagePointLayer.isChecked(),
-            }
-
             # set up all widgets for status reporting
-            # self.progressBar = QProgressBar()
-            # self.progressBar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            # self.progressBar.setMaximum(100)
+            self.progressBar = QProgressBar()
+            self.progressBar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            self.progressBar.setMaximum(100)
 
             self.statusMessageLabel = QLabel(self.tr("Starting..."))
             self.statusMessageLabel.setAlignment(
-                Qt.AlignLeft | Qt.AlignVCenter
-            )
+                Qt.AlignLeft | Qt.AlignVCenter)
 
             cancelButton = QPushButton(self.tr("Cancel"))
             cancelButton.clicked.connect(self.stopWorker)
 
             self.messageBarItem = self.iface.messageBar().createMessage("")
             self.messageBarItem.layout().addWidget(self.statusMessageLabel)
+            self.messageBarItem.layout().addWidget(self.progressBar)
             self.messageBarItem.layout().addWidget(cancelButton)
 
             self.iface.messageBar().pushWidget(self.messageBarItem, Qgis.Info)
 
-            # self.updateProgressBar()
             self.updateStatusMessage(self.tr("Starting"))
 
-            # self.updateProgressBar(10)
-            self.updateStatusMessage(
-                self.tr("1- Creation of image points layer"))
-            source_to_use, image_to_use, image_layer = \
-                get_image_points(source_layer, id_field,
-                                 mat_extract, id_ref_feature,
-                                 idx, deplacement_factor,
-                                 self.display['image_points'])
+            if self.dlg.gridTabWidget.currentIndex() == 0:
+                if self.time_matrix is None:
+                    self.read_matrix(self.dlg.matrixQgsFileWidget.filePath())
+                background_layer = \
+                    self.dlg.backgroundLayerComboBox.currentLayer()
+                source_layer = self.dlg.pointLayerComboBox.currentLayer()
+                id_ref_feature = self.dlg.refFeatureComboBox.currentText()
+                id_field = self.dlg.mFieldComboBox.currentField()
+                mat_extract = self.time_matrix[self.col_ix[id_ref_feature]]
+                precision = self.dlg.doubleSpinBoxGridPrecision.value()
+                deplacement_factor = self.dlg.doubleSpinBoxDeplacement.value()
+                idx = self.line_ix
 
-            if len(source_to_use) == 0 or len(image_to_use) == 0:
-                self.iface.messageBar().pushCritical(
-                    self.tr("Error"),
-                    self.tr("DistCartogram: "
+                self.progressBar.setMaximum(
+                    15 + background_layer.featureCount()
+                    + (source_layer.featureCount() * precision) / 1.5)
+
+                self.display = {
+                    'source_grid': self.dlg.checkBoxSourceGrid.isChecked(),
+                    'trans_grid': self.dlg.checkBoxTransformedGrid.isChecked(),
+                    'image_points': self.dlg.checkBoxImagePointLayer.isChecked(),
+                }
+                self.updateStatusMessage(
+                    self.tr("1- Creation of image points layer"))
+                source_to_use, image_to_use, image_layer = \
+                    get_image_points(source_layer, id_field,
+                                     mat_extract, id_ref_feature,
+                                     idx, deplacement_factor,
+                                     self.display['image_points'])
+                self.updateProgressBar(5)
+                if len(source_to_use) == 0 or len(image_to_use) == 0:
+                    self.iface.messageBar().pushCritical(
+                        self.tr("Error"),
+                        self.tr(
+                            "DistCartogram: "
                             "The \"image\" point layer is empty."
                             "This is probably due to a problem of "
                             "non-correspondence between the identifiers of the"
                             " features the point layer and the identifiers in "
                             "the provided matrix."))
-                return
-            extent_bg_layer = background_layer.extent()
-            extent_source_layer = source_layer.extent()
-            max_extent = (
-                min(extent_bg_layer.xMinimum(),
-                    extent_source_layer.xMinimum()),
-                min(extent_bg_layer.yMinimum(),
-                    extent_source_layer.yMinimum()),
-                max(extent_bg_layer.xMaximum(),
-                    extent_source_layer.xMaximum()),
-                max(extent_bg_layer.yMaximum(),
-                    extent_source_layer.yMaximum())
-            )
+                    return
+                self.image_layer = image_layer
+                extent_bg_layer = background_layer.extent()
+                extent_source_layer = source_layer.extent()
+                max_extent = (
+                    min(extent_bg_layer.xMinimum(),
+                        extent_source_layer.xMinimum()),
+                    min(extent_bg_layer.yMinimum(),
+                        extent_source_layer.yMinimum()),
+                    max(extent_bg_layer.xMaximum(),
+                        extent_source_layer.xMaximum()),
+                    max(extent_bg_layer.yMaximum(),
+                        extent_source_layer.yMaximum())
+                )
+                self.startWorker(source_to_use, image_to_use,
+                                 precision, max_extent, [background_layer])
 
-            self.image_layer = image_layer
-            # self.updateProgressBar(20)
-            self.startWorker(source_to_use, image_to_use,
-                             precision, max_extent, [background_layer])
+            else:
+                background_layer = \
+                    self.dlg.backgroundLayerComboBox_2.currentLayer()
+                source_layer = self.dlg.pointLayerComboBox_2.currentLayer()
+                id_field_source = self.dlg.mFieldComboBox_2.currentField()
+                image_layer = self.dlg.imagePointLayerComboBox_2.currentLayer()
+                id_field_image = self.dlg.mImageFieldComboBox_2.currentField()
+                precision = self.dlg.doubleSpinBoxGridPrecision_2.value()
+                #
+                self.display = {
+                    'source_grid': self.dlg.checkBoxSourceGrid_2.isChecked(),
+                    'trans_grid': self.dlg.checkBoxTransformedGrid_2.isChecked(),
+                    'image_points': False,
+                }
+                self.progressBar.setMaximum(
+                    15 + background_layer.featureCount()
+                    + (precision * image_layer.featureCount()) / 1.5)
+
+                if source_layer.featureCount() != image_layer.featureCount():
+                    self.updateStatusMessage(self.tr(
+                        "Number of features differ between source and image "
+                        "layers - Only feature with matching ids will be "
+                        "taken into account"))
+                source_to_use, image_to_use = extract_source_image(
+                    source_layer, image_layer, id_field_source, id_field_image)
+
+                self.updateProgressBar(5)
+
+                extent_bg_layer = background_layer.extent()
+                extent_source_layer = source_layer.extent()
+                extent_image_layer = source_layer.extent()
+                max_extent = (
+                    min([
+                        extent_bg_layer.xMinimum(),
+                        extent_source_layer.xMinimum(),
+                        extent_image_layer.xMinimum(),
+                        ]),
+                    min([
+                        extent_bg_layer.yMinimum(),
+                        extent_source_layer.yMinimum(),
+                        extent_image_layer.yMinimum(),
+                        ]),
+                    max([
+                        extent_bg_layer.xMaximum(),
+                        extent_source_layer.xMaximum(),
+                        extent_image_layer.xMaximum(),
+                        ]),
+                    max([
+                        extent_bg_layer.yMaximum(),
+                        extent_source_layer.yMaximum(),
+                        extent_image_layer.yMaximum(),
+                        ])
+                )
+                self.startWorker(source_to_use, image_to_use,
+                                 precision, max_extent, [background_layer])
+
+
+def extract_source_image(source_lyr, image_lyr, id_source, id_image):
+    source_to_use = []
+    image_to_use = []
+    temp_source = []
+    temp_image = {}
+
+    for ft in source_lyr.getFeatures():
+        temp_source.append(
+            (ft[id_source], ft.geometry().__geo_interface__['coordinates'])
+        )
+
+    for ft in image_lyr.getFeatures():
+        temp_image[ft[id_image]] = \
+            ft.geometry().__geo_interface__['coordinates']
+
+    for _id_source, geom_source in temp_source:
+        geom_image = temp_image.get(_id_source, None)
+        if not geom_image:
+            continue
+        source_to_use.append(
+            Point(geom_source[0], geom_source[1]))
+        image_to_use.append(
+            Point(geom_image[0], geom_image[1]))
+
+    return (source_to_use, image_to_use)
 
 
 def get_image_points(
