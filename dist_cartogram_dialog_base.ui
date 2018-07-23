@@ -75,13 +75,13 @@
        <widget class="QLabel" name="label">
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>300</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>270</width>
+          <width>320</width>
           <height>16777215</height>
          </size>
         </property>
@@ -97,13 +97,13 @@
        <widget class="QgsMapLayerComboBox" name="backgroundLayerComboBox">
         <property name="minimumSize">
          <size>
-          <width>350</width>
+          <width>370</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>490</width>
+          <width>400</width>
           <height>16777215</height>
          </size>
         </property>
@@ -113,13 +113,13 @@
        <widget class="QLabel" name="label_2">
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>300</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>270</width>
+          <width>320</width>
           <height>16777215</height>
          </size>
         </property>
@@ -132,13 +132,13 @@
        <widget class="QgsMapLayerComboBox" name="pointLayerComboBox">
         <property name="minimumSize">
          <size>
-          <width>350</width>
+          <width>370</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>490</width>
+          <width>400</width>
           <height>16777215</height>
          </size>
         </property>
@@ -148,13 +148,13 @@
        <widget class="QLabel" name="label_8">
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>300</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>270</width>
+          <width>320</width>
           <height>16777215</height>
          </size>
         </property>
@@ -167,13 +167,13 @@
        <widget class="QgsFieldComboBox" name="mFieldComboBox">
         <property name="minimumSize">
          <size>
-          <width>350</width>
+          <width>370</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>490</width>
+          <width>400</width>
           <height>16777215</height>
          </size>
         </property>
@@ -183,13 +183,13 @@
        <widget class="QLabel" name="label_3">
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>300</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>270</width>
+          <width>320</width>
           <height>16777215</height>
          </size>
         </property>
@@ -205,13 +205,13 @@
        <widget class="QgsFileWidget" name="matrixQgsFileWidget">
         <property name="minimumSize">
          <size>
-          <width>350</width>
+          <width>370</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>490</width>
+          <width>400</width>
           <height>27</height>
          </size>
         </property>
@@ -224,13 +224,13 @@
        <widget class="QLabel" name="label_4">
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>300</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>270</width>
+          <width>320</width>
           <height>16777215</height>
          </size>
         </property>
@@ -246,13 +246,13 @@
        <widget class="QComboBox" name="refFeatureComboBox">
         <property name="minimumSize">
          <size>
-          <width>350</width>
+          <width>370</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>490</width>
+          <width>400</width>
           <height>16777215</height>
          </size>
         </property>
@@ -262,13 +262,13 @@
        <widget class="QLabel" name="label_7">
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>300</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>270</width>
+          <width>320</width>
           <height>16777215</height>
          </size>
         </property>
@@ -300,13 +300,13 @@
        <widget class="QLabel" name="label_6">
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>300</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>270</width>
+          <width>320</width>
           <height>16777215</height>
          </size>
         </property>
@@ -418,11 +418,11 @@
       <rect>
        <x>10</x>
        <y>7</y>
-       <width>778</width>
+       <width>771</width>
        <height>481</height>
       </rect>
      </property>
-     <layout class="QGridLayout" name="gridLayout_3" columnminimumwidth="200,500">
+     <layout class="QGridLayout" name="gridLayout_3">
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
@@ -470,13 +470,13 @@
        <widget class="QgsFieldComboBox" name="mFieldComboBox_2">
         <property name="minimumSize">
          <size>
-          <width>350</width>
+          <width>400</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>490</width>
+          <width>400</width>
           <height>16777215</height>
          </size>
         </property>
@@ -511,34 +511,18 @@
        <widget class="QLabel" name="label_10">
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>190</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>270</width>
+          <width>320</width>
           <height>16777215</height>
          </size>
         </property>
         <property name="text">
          <string>Grid precision</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QgsMapLayerComboBox" name="backgroundLayerComboBox_2">
-        <property name="minimumSize">
-         <size>
-          <width>350</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>490</width>
-          <height>16777215</height>
-         </size>
         </property>
        </widget>
       </item>
@@ -561,33 +545,17 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
-       <widget class="QgsFieldComboBox" name="mImageFieldComboBox_2">
-        <property name="minimumSize">
-         <size>
-          <width>350</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>490</width>
-          <height>16777215</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
+      <item row="0" column="0" alignment="Qt::AlignHCenter">
        <widget class="QLabel" name="label_12">
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>300</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>270</width>
+          <width>320</width>
           <height>16777215</height>
          </size>
         </property>
@@ -603,13 +571,13 @@
        <widget class="QLabel" name="label_17">
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>300</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>270</width>
+          <width>320</width>
           <height>16777215</height>
          </size>
         </property>
@@ -625,13 +593,13 @@
        <widget class="QgsMapLayerComboBox" name="pointLayerComboBox_2">
         <property name="minimumSize">
          <size>
-          <width>350</width>
+          <width>400</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>490</width>
+          <width>400</width>
           <height>16777215</height>
          </size>
         </property>
@@ -641,13 +609,13 @@
        <widget class="QLabel" name="label_16">
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>300</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>270</width>
+          <width>320</width>
           <height>16777215</height>
          </size>
         </property>
@@ -660,13 +628,13 @@
        <widget class="QLabel" name="label_15">
         <property name="minimumSize">
          <size>
-          <width>270</width>
+          <width>300</width>
           <height>27</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>270</width>
+          <width>320</width>
           <height>16777215</height>
          </size>
         </property>
@@ -679,13 +647,13 @@
        <widget class="QLabel" name="label_32">
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>300</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>270</width>
+          <width>320</width>
           <height>16777215</height>
          </size>
         </property>
@@ -698,13 +666,13 @@
        <widget class="QgsMapLayerComboBox" name="imagePointLayerComboBox_2">
         <property name="minimumSize">
          <size>
-          <width>350</width>
+          <width>400</width>
           <height>0</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>490</width>
+          <width>400</width>
           <height>16777215</height>
          </size>
         </property>
@@ -725,6 +693,38 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item row="4" column="1">
+       <widget class="QgsFieldComboBox" name="mImageFieldComboBox_2">
+        <property name="minimumSize">
+         <size>
+          <width>400</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>400</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QgsMapLayerComboBox" name="backgroundLayerComboBox_2">
+        <property name="minimumSize">
+         <size>
+          <width>400</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>400</width>
+          <height>27</height>
+         </size>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
