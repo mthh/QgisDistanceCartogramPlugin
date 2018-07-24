@@ -581,7 +581,7 @@ class DistCartogram:
                     'image_points': self.dlg.checkBoxImagePointLayer.isChecked(),
                 }
                 self.updateStatusMessage(
-                    self.tr("1- Creation of image points layer"))
+                    self.tr("Creation of image points layer"))
                 source_to_use, image_to_use, image_layer = \
                     get_image_points(source_layer, id_field,
                                      mat_extract, id_ref_feature,

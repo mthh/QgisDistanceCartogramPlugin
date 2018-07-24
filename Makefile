@@ -53,7 +53,7 @@ PY_FILES = \
 
 EXTRAS = metadata.txt icon.png LICENSE
 
-EXTRA_DIRS =
+EXTRA_DIRS = data
 
 COMPILED_RESOURCE_FILES = resources.py
 

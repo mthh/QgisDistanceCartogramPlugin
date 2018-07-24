@@ -40,12 +40,7 @@
     <message>
         <location filename="../dist_cartogram.py" line="559"/>
         <source>Starting</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../dist_cartogram.py" line="238"/>
-        <source>No match between ids</source>
-        <translation type="obsolete">Pas de correspondance entre les ID de la couche et ceux de la matrice</translation>
+        <translation>En cours</translation>
     </message>
     <message>
         <location filename="../dist_cartogram.py" line="254"/>
@@ -54,33 +49,33 @@
     </message>
     <message>
         <location filename="../dist_cartogram.py" line="583"/>
-        <source>1- Creation of image points layer</source>
-        <translation>1 - Création de la couche de points &quot;image&quot;</translation>
+        <source>Creation of image points layer</source>
+        <translation>Création de la couche de points &quot;image&quot;</translation>
     </message>
     <message>
         <location filename="../dist_cartogram.py" line="290"/>
         <source>No match between point layer ID and matrix ID</source>
-        <translation type="unfinished">Pas des correspondance entre les identifiants de la couche de points et ceux de la matrice</translation>
+        <translation>Pas des correspondance entre les identifiants de la couche de points et ceux de la matrice</translation>
     </message>
     <message>
         <location filename="../dist_cartogram.py" line="294"/>
         <source>Success</source>
-        <translation type="unfinished"></translation>
+        <translation>Succès</translation>
     </message>
     <message>
         <location filename="../dist_cartogram.py" line="294"/>
         <source>Matches found between point layer ID and matrix ID</source>
-        <translation type="unfinished">correspondances trouvées entre les identifiants de la couche de points et ceux de la matrice</translation>
+        <translation>Correspondances trouvées entre les identifiants de la couche de points et ceux de la matrice</translation>
     </message>
     <message>
         <location filename="../dist_cartogram.py" line="311"/>
         <source>Identifiant values have to be uniques</source>
-        <translation type="unfinished">Les valeurs d'identifiants doivent être uniques.</translation>
+        <translation>Les valeurs d'identifiants doivent être uniques.</translation>
     </message>
     <message>
         <location filename="../dist_cartogram.py" line="316"/>
         <source>Not enough matching features between source and image layer</source>
-        <translation type="unfinished">Pas assez de correspondances trouvées entre la couche source et la couche image</translation>
+        <translation>Pas assez de correspondances trouvées entre la couche source et la couche image</translation>
     </message>
     <message>
         <location filename="../dist_cartogram.py" line="333"/>
@@ -105,12 +100,12 @@
     <message>
         <location filename="../dist_cartogram.py" line="592"/>
         <source>DistCartogram: The &quot;image&quot; point layer is empty.This is probably due to a problem of non-correspondence between the identifiers of the features the point layer and the identifiers in the provided matrix.</source>
-        <translation type="unfinished"></translation>
+        <translation>DistCartogram: La couche de points &quot;image&quot; est vide. Cela est probablement du à un problème de non-correspondance entre les identifiants de la couche de points source et ceux de la matrice.</translation>
     </message>
     <message>
         <location filename="../dist_cartogram.py" line="637"/>
         <source>Number of features differ between source and image layers - Only feature with matching ids will be taken into account</source>
-        <translation type="unfinished">Le nombre d'entités est différent entre la couche "source" et la couche "image" - Seulement les entités ayant des identifiants qui correspondent seront prise en compte.</translation>
+        <translation>Le nombre d'entités est différent entre la couche &quot;source&quot; et la couche &quot;image&quot; - Seulement les entités ayant des identifiants qui correspondent seront prise en compte.</translation>
     </message>
 </context>
 <context>
@@ -228,7 +223,7 @@
     <message>
         <location filename="../dist_cartogram_dialog_baseUi.py" line="302"/>
         <source>From source points and image points</source>
-        <translation>À partir de points "source" et de points "image"</translation>
+        <translation>À partir de points &quot;source&quot; et de points &quot;image&quot;</translation>
     </message>
 </context>
 <context>
