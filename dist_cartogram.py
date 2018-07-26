@@ -258,7 +258,8 @@ class DistanceCartogram:
             icon_path,
             text=self.tr(u'Add sample dataset'),
             callback=self.run,
-            parent=self.iface.mainWindow())
+            parent=self.iface.mainWindow(),
+            add_to_toolbar=False)
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
