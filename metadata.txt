@@ -7,7 +7,7 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=DistCartogram
+name=DistanceCartogram
 qgisMinimumVersion=3.0
 description=Compute distance cartogram
 version=0.1

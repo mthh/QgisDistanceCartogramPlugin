@@ -1,9 +1,9 @@
-.. DistCartogram documentation master file, created by
+.. DistanceCartogram documentation master file, created by
    sphinx-quickstart on Sun Feb 12 17:11:03 2012.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-DistCartogram QGIS Plugin Documentation
+DistanceCartogram QGIS Plugin Documentation
 ============================================
 
 .. toctree::
@@ -13,14 +13,14 @@ DistCartogram QGIS Plugin Documentation
 
 Introduction
 =================
-DistCartogram aims to create what is often defined as a **distance cartogram**.
+DistanceCartogram aims to create what is often defined as a **distance cartogram**.
 
 This is done by showing (on background(s) layer(s), such as the territorial divisions of the study zone) the local
 deformations (calculated using Waldo Tobler's bidimensional regression) to fit image points to source points.
 
 The relation between the source points and the image points must depend on the studied theme: positions in access time or estimated positions in spatial cognition for example.
 
-**DistCartogram QGIS plugin** allows to create distance cartograms in two ways:
+**DistanceCartogram QGIS plugin** allows to create distance cartograms in two ways:
 
 * by providing a **layer of points** and a **time matrix between them** (used to create the image points layer)
 * by providing **2 layers of related points** : the source points and the image points.

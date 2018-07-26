@@ -32,5 +32,5 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :type iface: QgsInterface
     """
     #
-    from .dist_cartogram import DistCartogram
-    return DistCartogram(iface)
+    from .dist_cartogram import DistanceCartogram
+    return DistanceCartogram(iface)

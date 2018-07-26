@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>530</x>
-     <y>660</y>
+     <y>665</y>
      <width>251</width>
      <height>32</height>
     </rect>
@@ -64,8 +64,8 @@
     <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
-       <x>7</x>
-       <y>7</y>
+       <x>10</x>
+       <y>10</y>
        <width>771</width>
        <height>481</height>
       </rect>
@@ -386,7 +386,7 @@
         <item>
          <widget class="QCheckBox" name="checkBoxImagePointLayer">
           <property name="text">
-           <string>Image point layer</string>
+           <string>Translated point layer</string>
           </property>
          </widget>
         </item>
@@ -417,9 +417,9 @@
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>7</y>
+       <y>10</y>
        <width>771</width>
-       <height>481</height>
+       <height>471</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
@@ -585,7 +585,7 @@
          <string>Path to a .csv document containing a time matrix between the points from the layer previously selected.</string>
         </property>
         <property name="text">
-         <string>Image points layer</string>
+         <string>Translated points layer</string>
         </property>
        </widget>
       </item>
@@ -658,7 +658,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Image points layer id field</string>
+         <string>Translated points layer id field</string>
         </property>
        </widget>
       </item>
@@ -734,7 +734,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>660</y>
+     <y>665</y>
      <width>91</width>
      <height>32</height>
     </rect>
@@ -749,7 +749,7 @@
      <x>0</x>
      <y>590</y>
      <width>791</width>
-     <height>61</height>
+     <height>71</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="bottomVerticalLayout"/>
