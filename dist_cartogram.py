@@ -423,6 +423,7 @@ class DistanceCartogram:
 
     def state_ok_button(self):
         result = False
+
         if self.dlg.gridTabWidget.currentIndex() == 0:
             a = self.dlg.pointLayerComboBox.currentIndex()
             b = self.dlg.backgroundLayerComboBox.currentIndex()
@@ -451,12 +452,11 @@ class DistanceCartogram:
                             self.dlg.mFieldComboBox_2.currentField(),
                             self.dlg.imagePointLayerComboBox_2.currentLayer(),
                             self.dlg.mImageFieldComboBox_2.currentField()):
-                print(a, b, c, d, e)
                 result = False
             else:
                 result = True
 
-            self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(result)
+        self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(result)
 
 
     def startWorker(self, src_pts, img_pts, precision, max_extent, layers):
@@ -480,7 +480,8 @@ class DistanceCartogram:
         self.thread = thread
 
     def stopWorker(self):
-        self.worker.stopped = True
+        if hasattr(self, 'worker'):
+            self.worker.stopped = True
 
     def push_error(self, e, exceptionString):
         self.iface.messageBar().pushCritical(

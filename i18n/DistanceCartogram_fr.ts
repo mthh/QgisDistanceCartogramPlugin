@@ -151,7 +151,7 @@
     <message>
         <location filename="../dist_cartogram.py" line="252"/>
         <source>Create distance cartogram</source>
-        <translation>&gt;Création de cartogramme de distance</translation>
+        <translation>Création de cartogramme de distance</translation>
     </message>
     <message>
         <location filename="../dist_cartogram.py" line="592"/>
