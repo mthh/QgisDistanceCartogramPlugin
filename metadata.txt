@@ -14,10 +14,10 @@ version=0.1
 author=Matthieu Viry
 email=matthieu.viry@cnrs.fr
 
-about=Provide a brief description of the plugin and its purpose.
+about=DistanceCartogram QGIS plugin allows to create distance cartogram. This is done by showing (on background(s) layer(s), such as the territorial divisions of the study zone) the local deformations (calculated using Waldo Tobler's bidimensional regression) to fit image points to source points. DistanceCartogram allows to create distance cartograms in two ways: from two layers of points (source points and image points) or from a layer of points and a time matrix between them.
 
-tracker=http://bugs
-repository=http://repo
+tracker=https://github.com/mthh/QgisDistanceCartogramPlugin/issues
+repository=https://github.com/mthh/QgisDistanceCartogramPlugin
 # End of mandatory metadata
 
 # Recommended items:
@@ -26,9 +26,9 @@ repository=http://repo
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=python,cartogram,distance
+tags=cartogram,distance,time-space mapping
 
-homepage=http://homepage
+homepage=https://github.com/mthh/QgisDistanceCartogramPlugin
 category=Vector
 icon=icon.png
 # experimental flag

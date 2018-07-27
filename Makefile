@@ -47,6 +47,7 @@ PY_FILES = \
 	dist_cartogram.py grid.py \
     dist_cartogram_dialog.py \
     dist_cartogram_dialog_baseUi.py \
+    dist_cartogram_dataset_boxUi.py \
     worker.py
 
 # UI_FILES = dist_cartogram_dialog_base.ui

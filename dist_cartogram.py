@@ -61,7 +61,11 @@ from qgis.gui import QgsMessageBar
 from .resources import *
 # Import the code for the dialog
 from .dist_cartogram_dialog import DistCartogramDialog
+# Code for the small dialog displayed when sample dataset is added
+from .dist_cartogram_dataset_boxUi import DatasetDialog
+# Helpers to manipulate data to prepare for bidimensionnal regression
 from .grid import Point, extrapole_line
+# QThread worker to compute the cartogram in babkground
 from .worker import DistCartogramWorker
 
 
@@ -156,6 +160,7 @@ class DistanceCartogram:
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'DistanceCartogram')
         self.toolbar.setObjectName(u'DistanceCartogram')
+        self.fill_file_widget_with_sample_value = False
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -257,7 +262,7 @@ class DistanceCartogram:
         self.add_action(
             icon_path,
             text=self.tr(u'Add sample dataset'),
-            callback=self.run,
+            callback=self.add_sample_dataset,
             parent=self.iface.mainWindow(),
             add_to_toolbar=False)
 
@@ -275,6 +280,29 @@ class DistanceCartogram:
         """Display application help to the user."""
         help_file = 'file:///{}/help/index.html'.format(self.plugin_dir)
         QDesktopServices.openUrl(QUrl(help_file))
+
+    def add_sample_dataset(self):
+        base_uri = '|'.join([
+            os.path.join(self.plugin_dir, 'data', 'prefecture_FRA.gpkg'),
+            'layername={}',
+            ])
+        self.iface.addVectorLayer(
+            base_uri.format('departement'),
+            'departement',
+            'ogr')
+
+        self.iface.addVectorLayer(
+            base_uri.format('prefecture'),
+            'prefecture',
+            'ogr')
+
+        csv_path = os.path.join(self.plugin_dir, 'data', 'mat.csv')
+
+        dataset_dialog = DatasetDialog()
+        dataset_dialog.show()
+        dataset_dialog.matrixPathTextEdit.setText(csv_path)
+        _rv = dataset_dialog.exec_()
+        self.fill_file_widget_with_sample_value = True
 
     def fill_field_combo_box(self, layer):
         self.dlg.mFieldComboBox.setLayer(layer)
@@ -458,7 +486,6 @@ class DistanceCartogram:
 
         self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(result)
 
-
     def startWorker(self, src_pts, img_pts, precision, max_extent, layers):
         worker = DistCartogramWorker(
             src_pts, img_pts,
@@ -539,6 +566,13 @@ class DistanceCartogram:
         """Run method that performs all the real work"""
         # show the dialog
         self.dlg.show()
+        # If the last action was to add the sample dataset, pref-fill the
+        # dedicated QgsFileWidget with the path of the sample csv matrix
+        if self.fill_file_widget_with_sample_value:
+            self.fill_file_widget_with_sample_value = False
+            csv_path = os.path.join(self.plugin_dir, 'data', 'mat.csv')
+            self.dlg.matrixQgsFileWidget.setFilePath(csv_path)
+        # ...
         self.reset_fields()
         # Run the dialog event loop
         result = self.dlg.exec_()

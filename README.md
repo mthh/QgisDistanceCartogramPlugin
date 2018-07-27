@@ -14,7 +14,7 @@ The relation between the source points and the image points must depend on the s
 * by providing **2 layers of related points** : the source points and the image points.
 
 
-[![png](help/source/img/screenshot500.png)](http://magrit.cnrs.fr)
+[![png](help/source/img/screenshot500.png)]
 
 Note:
 >> This is a [Darcy](http://thema.univ-fcomte.fr/production/logiciels/16-categories-en-francais/cat-productions-fr/cat-logiciels-fr/294-art-darcy) port regarding to the bidimensional regression and the backgrounds layers deformation.  

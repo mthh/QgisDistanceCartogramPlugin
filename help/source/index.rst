@@ -28,13 +28,15 @@ The relation between the source points and the image points must depend on the s
 Notes:
 
 * This is a Darcy_ port regarding to the bidimensional regression and the backgrounds layers deformation. All credits for the contribution of the method goes to *Colette Cauvin* and for the reference implementation goes to *Gilles Vuidel*.
-* The way the points are moved (detailed below) from the time matrix is quite simple and is based on my readings and my understanding of the phenomenon. Other methods exists and could be implemented (both in this plugin or by the user while preparing its dataset).
+* The way the points are moved from the time matrix is quite simple and is explained below. Other methods exists (such as `Multidimensional scaling (MDS)`_) and could be implemented (both in this plugin or by the user while preparing its dataset).
 
 
 .. image:: img/screenshot500.png
   :align: center
 
 .. _Darcy: http://thema.univ-fcomte.fr/production/logiciels/16-categories-en-francais/cat-productions-fr/cat-logiciels-fr/294-art-darcy
+.. _Multidimensional scaling (MDS): https://en.wikipedia.org/wiki/Multidimensional_scaling
+
 
 .. index:: Data
 
