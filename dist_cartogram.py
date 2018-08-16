@@ -321,10 +321,12 @@ class DistanceCartogram:
             return
         ids = [ft[id_field] for ft in layer.getFeatures()]
         if not any(_id in self.col_ix for _id in ids):
+            self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
                 self.tr("No match between point layer ID and matrix ID"))
             return False
+        self.dlg.msg_bar.clearWidgets()
         self.dlg.msg_bar.pushSuccess(
             self.tr("Success"),
             self.tr("Matches found between point layer ID and matrix ID"))
@@ -342,11 +344,13 @@ class DistanceCartogram:
         set_image_ids = set(image_ids)
         if len(source_ids) != len(set_source_ids) \
                 or len(image_ids) != len(set_image_ids):
+            self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
                 self.tr("Identifiant values have to be uniques"))
             return False
         if len(set_source_ids.intersection(set_image_ids)) < 3:
+            self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
                 self.tr("Not enough matching features between "
@@ -364,6 +368,7 @@ class DistanceCartogram:
         if not filepath:
             return
         if not os.path.exists(filepath) or os.path.isdir(filepath):
+            self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
                 self.tr("File {} not found".format(filepath)))
@@ -386,6 +391,7 @@ class DistanceCartogram:
                 try:
                     self.time_matrix = np.array(d, dtype=np.float)
                 except ValueError as err:
+                    self.dlg.msg_bar.clearWidgets()
                     self.dlg.msg_bar.pushCritical(
                         self.tr("Error"),
                         self.tr(
@@ -393,6 +399,7 @@ class DistanceCartogram:
                             "(excepting columns/lines id) must be numbers"))
                     return
         except Exception as err:
+            self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
                 self.tr("An unexpected error has occurred while reading the "
@@ -407,6 +414,7 @@ class DistanceCartogram:
 
         if not all(k in line_ix for k in col_ix.keys()):
             self.time_matrix = None
+            self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
                 self.tr("Lines and columns index have to be the same"))
