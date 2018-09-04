@@ -319,7 +319,7 @@ class DistanceCartogram:
     def check_values_id_field(self, layer, id_field):
         if not self.col_ix:
             return
-        ids = [ft[id_field] for ft in layer.getFeatures()]
+        ids = [str(ft[id_field]) for ft in layer.getFeatures()]
         if not any(_id in self.col_ix for _id in ids):
             self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
@@ -383,7 +383,7 @@ class DistanceCartogram:
                     if i == 0 and _id == "":
                         zz = -1
                         continue
-                    col_ix[_id] = i + zz
+                    col_ix[str(_id)] = i + zz
                 d = []
                 for i, data in enumerate(data_iter):
                     d.append(data[1:])
@@ -765,7 +765,7 @@ def get_image_points(
     ][0]
     source_layer_dict = {}
     for ft in source_layer.getFeatures():
-        id_value = ft[id_field]
+        id_value = str(ft[id_field])
         if id_value not in idx:
             continue
         source_layer_dict[id_value] = {
