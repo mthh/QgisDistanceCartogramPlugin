@@ -318,6 +318,28 @@ class DistanceCartogram:
         self.dlg.mImageFieldComboBox_2.setLayer(layer)
         self.state_ok_button()
 
+    def check_layers_crs(self, layers):
+        crs = []
+        for lyr in layers:
+            proj = lyr.crs()
+            crs.append((proj.authid(), proj.isGeographic()))
+        print(crs)
+        if not all([crs[0][0] == authid[0] for authid in crs]):
+            self.dlg.msg_bar.clearWidgets()
+            self.dlg.msg_bar.pushCritical(
+                self.tr("Error"),
+                self.tr("Layers have to be in the same (projected) crs"))
+            return False
+
+        elif any([a[1] for a in crs]):
+            self.dlg.msg_bar.clearWidgets()
+            self.dlg.msg_bar.pushCritical(
+                self.tr("Error"),
+                self.tr("Layers have to be in a projected crs"))
+            return False
+
+        return True
+
     def check_values_id_field(self, layer, id_field):
         if not self.col_ix:
             return
@@ -475,7 +497,10 @@ class DistanceCartogram:
                             self.dlg.mFieldComboBox.currentField()) or not e:
                 result = False
             else:
-                result = True
+                result = self.check_layers_crs((
+                    self.dlg.pointLayerComboBox.currentLayer(),
+                    self.dlg.backgroundLayerComboBox.currentLayer()))
+                # result = True
 
         else:
             a = self.dlg.backgroundLayerComboBox_2.currentIndex()
@@ -492,7 +517,12 @@ class DistanceCartogram:
                             self.dlg.mImageFieldComboBox_2.currentField()):
                 result = False
             else:
-                result = True
+                result = self.check_layers_crs((
+                    self.dlg.pointLayerComboBox_2.currentLayer(),
+                    self.dlg.imagePointLayerComboBox_2.currentLayer(),
+                    self.dlg.backgroundLayerComboBox_2.currentLayer()))
+                #
+                # result = True
 
         self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(result)
 

@@ -167,6 +167,16 @@
         <translation>Création de cartogramme de distance</translation>
     </message>
     <message>
+        <location filename="../dist_cartogram.py" line="331"/>
+        <source>Layers have to be in the same (projected) crs</source>
+        <translation>Les couches doivent être dans le même système de coordonnées (projeté)</translation>
+    </message>
+    <message>
+        <location filename="../dist_cartogram.py" line="338"/>
+        <source>Layers have to be in a projected crs</source>
+        <translation>Les couches doivent être dans un système de coordonnées projeté</translation>
+    </message>
+    <message>
         <location filename="../dist_cartogram.py" line="636"/>
         <source>Error</source>
         <translation>Erreur</translation>
