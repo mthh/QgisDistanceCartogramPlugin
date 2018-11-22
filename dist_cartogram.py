@@ -323,7 +323,6 @@ class DistanceCartogram:
         for lyr in layers:
             proj = lyr.crs()
             crs.append((proj.authid(), proj.isGeographic()))
-        print(crs)
         if not all([crs[0][0] == authid[0] for authid in crs]):
             self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
@@ -341,10 +340,10 @@ class DistanceCartogram:
         return True
 
     def check_values_id_field(self, layer, id_field):
-        if not self.col_ix:
+        if not self.line_ix:
             return
         ids = [str(ft[id_field]) for ft in layer.getFeatures()]
-        if not any(_id in self.col_ix for _id in ids):
+        if not any(_id in self.line_ix for _id in ids):
             self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
@@ -436,16 +435,17 @@ class DistanceCartogram:
             )
             return
 
-        if not all(k in line_ix for k in col_ix.keys()):
+        # FIXME : ...
+        if not any(k in line_ix for k in col_ix.keys()):
             self.time_matrix = None
             self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
-                self.tr("Error"),
+                self.tr("Error"), # FIXME : change message
                 self.tr("Lines and columns index have to be the same"))
             return
 
         self.dlg.refFeatureComboBox.clear()
-        self.dlg.refFeatureComboBox.addItems(col_ix.keys())
+        self.dlg.refFeatureComboBox.addItems(list(sorted(line_ix.keys())))
         self.col_ix = col_ix
         self.line_ix = line_ix
 
@@ -579,20 +579,19 @@ class DistanceCartogram:
 
     def cartogram_complete(
             self,
-            result_layers=None,
+            result_layer=None,
             source_grid_layer=None,
             trans_grid_layer=None):
         if hasattr(self, 'worker') and hasattr(self.worker, 'stopped') \
                 and self.worker.stopped:
             return
-        if result_layers is not None:
+        if result_layer is not None:
             if self.display['source_grid']:
                 QgsProject.instance().addMapLayer(source_grid_layer)
             if self.display['trans_grid']:
                 QgsProject.instance().addMapLayer(trans_grid_layer)
 
-            for result_layer in result_layers:
-                QgsProject.instance().addMapLayer(result_layer)
+            QgsProject.instance().addMapLayer(result_layer)
 
             if self.display['image_points']:
                 QgsProject.instance().addMapLayer(self.image_layer)
@@ -649,10 +648,10 @@ class DistanceCartogram:
                 source_layer = self.dlg.pointLayerComboBox.currentLayer()
                 id_ref_feature = self.dlg.refFeatureComboBox.currentText()
                 id_field = self.dlg.mFieldComboBox.currentField()
-                mat_extract = self.time_matrix[self.col_ix[id_ref_feature]]
+                source_idx, dest_idx = self.line_ix, self.col_ix
+                mat_extract = self.time_matrix[source_idx[id_ref_feature]]
                 precision = self.dlg.doubleSpinBoxGridPrecision.value()
                 deplacement_factor = self.dlg.doubleSpinBoxDeplacement.value()
-                idx = self.line_ix
 
                 self.progressBar.setMaximum(
                     15 + background_layer.featureCount()
@@ -668,7 +667,7 @@ class DistanceCartogram:
                 source_to_use, image_to_use, image_layer = \
                     get_image_points(source_layer, id_field,
                                      mat_extract, id_ref_feature,
-                                     idx, deplacement_factor,
+                                     dest_idx, deplacement_factor,
                                      self.display['image_points'])
                 self.updateProgressBar(5)
                 if len(source_to_use) == 0 or len(image_to_use) == 0:
@@ -787,7 +786,7 @@ def get_image_points(
         id_field,
         mat_extract,
         id_ref_feature,
-        idx,
+        dest_idx,
         factor,
         display_image_points):
     type_id_field = [
@@ -796,36 +795,36 @@ def get_image_points(
         if i.name() == id_field
     ][0]
     source_layer_dict = {}
-    xform = None
-    if source_layer.crs().isGeographic():
-        xform = QgsCoordinateTransform(
-            source_layer.crs(),
-            QgsCoordinateReferenceSystem(
-                "+proj=robin +lon_0=0 +x_0=0 +y_0=0 "
-                "+ellps=WGS84 +datum=WGS84 +units=m +no_defs"),
-            QgsProject.instance())
-        for ft in source_layer.getFeatures():
-            id_value = str(ft[id_field])
-            if id_value not in idx:
-                continue
-            source_layer_dict[id_value] = {
-                "geometry": QgsGeometry.fromPointXY(
-                    xform.transform(ft.geometry().asPoint())),
-                "dist_euclidienne": None,
-                "deplacement": None,
-                "time": mat_extract[idx[id_value]],
-            }
-    else:
-        for ft in source_layer.getFeatures():
-            id_value = str(ft[id_field])
-            if id_value not in idx:
-                continue
-            source_layer_dict[id_value] = {
-                "geometry": ft.geometry(),
-                "dist_euclidienne": None,
-                "deplacement": None,
-                "time": mat_extract[idx[id_value]],
-            }
+    # xform = None
+    # if source_layer.crs().isGeographic():
+    #     xform = QgsCoordinateTransform(
+    #         source_layer.crs(),
+    #         QgsCoordinateReferenceSystem(
+    #             "+proj=robin +lon_0=0 +x_0=0 +y_0=0 "
+    #             "+ellps=WGS84 +datum=WGS84 +units=m +no_defs"),
+    #         QgsProject.instance())
+    #     for ft in source_layer.getFeatures():
+    #         id_value = str(ft[id_field])
+    #         if id_value not in idx:
+    #             continue
+    #         source_layer_dict[id_value] = {
+    #             "geometry": QgsGeometry.fromPointXY(
+    #                 xform.transform(ft.geometry().asPoint())),
+    #             "dist_euclidienne": None,
+    #             "deplacement": None,
+    #             "time": mat_extract[idx[id_value]],
+    #         }
+    # else:
+    for ft in source_layer.getFeatures():
+        id_value = str(ft[id_field])
+        if id_value not in dest_idx:
+            continue
+        source_layer_dict[id_value] = {
+            "geometry": ft.geometry(),
+            "dist_euclidienne": None,
+            "deplacement": None,
+            "time": mat_extract[dest_idx[id_value]],
+        }
     ref_geometry = source_layer_dict[id_ref_feature]['geometry']
     for ix in source_layer_dict.keys():
         if ix == id_ref_feature:
@@ -888,21 +887,21 @@ def get_image_points(
         image_layer.startEditing()
         image_layer.setCrs(source_layer.crs())
 
-        if xform:
-            xform = QgsCoordinateTransform(
-                QgsCoordinateReferenceSystem(
-                    "+proj=robin +lon_0=0 +x_0=0 +y_0=0 "
-                    "+ellps=WGS84 +datum=WGS84 +units=m +no_defs"),
-                source_layer.crs(),
-                QgsProject.instance())
+        # if xform:
+        #     xform = QgsCoordinateTransform(
+        #         QgsCoordinateReferenceSystem(
+        #             "+proj=robin +lon_0=0 +x_0=0 +y_0=0 "
+        #             "+ellps=WGS84 +datum=WGS84 +units=m +no_defs"),
+        #         source_layer.crs(),
+        #         QgsProject.instance())
 
         for ix, geom in zip(ids, res_geoms):
             feature = QgsFeature()
-            feature.setGeometry(
-                geom if not xform
-                else QgsGeometry.fromPointXY(xform.transform(geom.asPoint())))
+            feature.setGeometry(geom
+                # if not xform
+                # else QgsGeometry.fromPointXY(xform.transform(geom.asPoint()))
+                )
             feature.setAttributes([QVariant(ix)])
             image_layer.addFeature(feature, QgsFeatureSink.FastInsert)
         image_layer.commitChanges()
-        QgsProject.instance().addMapLayer(image_layer)
     return (source_to_use, image_to_use, image_layer)

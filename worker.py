@@ -35,14 +35,14 @@ from qgis.core import (
     QgsGeometry,
     QgsPointXY,
     QgsVectorLayer,
-    QgsWkbTypes
+    QgsWkbTypes,
 )
 
 from .grid import Grid
 
 
 class DistCartogramWorker(QObject):
-    resultComplete = pyqtSignal(list, object, object)
+    resultComplete = pyqtSignal(object, object, object)
     finished = pyqtSignal()
     error = pyqtSignal(Exception, str)
     progress = pyqtSignal(int)
@@ -70,17 +70,17 @@ class DistCartogramWorker(QObject):
         transformed_layers = []
         for background_layer in self.layers_to_transform:
             _t = QgsWkbTypes.displayString(background_layer.wkbType())
-            if not 'Multi' in _t:
-                _t = 'Multi' + _t
+
             result_layer = QgsVectorLayer(
                 "{}?crs={}".format(_t, background_layer.crs().authid()),
                 "result_cartogram",
                 "memory")
+            features_to_add = []
+            result_layer.setCrs(background_layer.crs())
             pr_result_layer = result_layer.dataProvider()
             pr_result_layer.addAttributes(background_layer.fields().toList())
             result_layer.updateFields()
-            result_layer.startEditing()
-            result_layer.setCrs(background_layer.crs())
+
             for ix, ft in enumerate(background_layer.getFeatures()):
                 ref_geom = ft.geometry()
                 ref_coords = ref_geom.__geo_interface__['coordinates']
@@ -128,9 +128,10 @@ class DistCartogramWorker(QObject):
                 feature = QgsFeature()
                 feature.setGeometry(new_geom)
                 feature.setAttributes(ft.attributes())
-                result_layer.addFeature(feature, QgsFeatureSink.FastInsert)
+                features_to_add.append(feature)
                 self.progress.emit(1)
-            result_layer.commitChanges()
+            pr_result_layer.addFeatures(features_to_add)
+            result_layer.updateExtents()
             transformed_layers.append(result_layer)
         return transformed_layers
 
@@ -165,7 +166,10 @@ class DistCartogramWorker(QObject):
                 trans_grid_layer = None
 
             self.resultComplete.emit(
-                transformed_layers, source_grid_layer, trans_grid_layer)
+                transformed_layers[0],
+                source_grid_layer,
+                trans_grid_layer,
+            )
             self.finished.emit()
         except Exception as e:
             self.error.emit(e, traceback.format_exc())
