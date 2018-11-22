@@ -85,7 +85,7 @@ Points displacement from time matrix
 The method we propose allows the use of a travel time matrix to move the points of the dataset around a reference point (whose location will remain unchanged).
 The calculation for calculating the new position of the points is done in several steps:
 
-* Calculation of the Euclidean distance between the reference point (*labelled* **64445** *in our example*) and each of the other points.
+* Calculation of the Euclidean distance between the reference point (*labeled* **64445** *in our example*) and each of the other points.
 * Use of travel times and this distance to calculate a speed between the reference point and each of the other points
 * Calculation of the average speed
 * Calculation of a displacement coefficient to be applied to each point: the ratio between the speed associated with each point and the average speed
