@@ -302,6 +302,7 @@ class DistanceCartogram:
 
         dataset_dialog = DatasetDialog()
         dataset_dialog.show()
+        dataset_dialog.activateWindow()
         dataset_dialog.matrixPathTextEdit.setText(csv_path)
         _rv = dataset_dialog.exec_()
         self.fill_file_widget_with_sample_value = True
