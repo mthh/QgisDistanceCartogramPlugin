@@ -10,7 +10,7 @@
 name=DistanceCartogram
 qgisMinimumVersion=3.0
 description=Compute distance cartogram
-version=0.1
+version=0.2
 author=Matthieu Viry
 email=matthieu.viry@cnrs.fr
 
