@@ -860,7 +860,7 @@ def get_image_points(
         item = source_layer_dict[ix]
         deplacement = item['deplacement']
         coords = json.loads(item['geometry'].asJson())['coordinates']
-        if deplacement <= 1:
+        if deplacement < 1:
             deplacement = 1 + (deplacement - 1) * factor
             li = QgsGeometry.fromWkt(
                 """LINESTRING ({} {}, {} {})"""
