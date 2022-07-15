@@ -288,15 +288,21 @@ class DistanceCartogram:
             os.path.join(self.plugin_dir, 'data', 'prefecture_FRA.gpkg'),
             'layername={}',
             ])
-        self.iface.addVectorLayer(
+
+        layerDpt = self.iface.addVectorLayer(
             base_uri.format('departement'),
             'departement',
             'ogr')
 
-        self.iface.addVectorLayer(
+        layerPref = self.iface.addVectorLayer(
             base_uri.format('prefecture'),
             'prefecture',
             'ogr')
+
+        crs = QgsCoordinateReferenceSystem("EPSG:2154")
+
+        layerDpt.setCrs(crs)
+        layerPref.setCrs(crs)
 
         csv_path = os.path.join(self.plugin_dir, 'data', 'mat.csv')
 
