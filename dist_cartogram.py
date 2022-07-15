@@ -654,9 +654,9 @@ class DistanceCartogram:
                 precision = self.dlg.doubleSpinBoxGridPrecision.value()
                 deplacement_factor = self.dlg.doubleSpinBoxDeplacement.value()
 
-                self.progressBar.setMaximum(
+                self.progressBar.setMaximum(int(
                     15 + background_layer.featureCount()
-                    + (source_layer.featureCount() * precision) / 1.5)
+                    + (source_layer.featureCount() * precision) / 1.5))
 
                 self.display = {
                     'source_grid': self.dlg.checkBoxSourceGrid.isChecked(),
@@ -712,9 +712,9 @@ class DistanceCartogram:
                     'trans_grid': self.dlg.checkBoxTransformedGrid_2.isChecked(),
                     'image_points': False,
                 }
-                self.progressBar.setMaximum(
+                self.progressBar.setMaximum(int(
                     15 + background_layer.featureCount()
-                    + (precision * image_layer.featureCount()) / 1.5)
+                    + (precision * image_layer.featureCount()) / 1.5))
 
                 if source_layer.featureCount() != image_layer.featureCount():
                     self.updateStatusMessage(self.tr(
