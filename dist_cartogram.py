@@ -330,15 +330,16 @@ class DistanceCartogram:
         for lyr in layers:
             proj = lyr.crs()
             crs.append((proj.authid(), proj.isGeographic()))
+
+        self.dlg.msg_bar.clearWidgets()
+
         if not all([crs[0][0] == authid[0] for authid in crs]):
-            self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
                 self.tr("Layers have to be in the same (projected) crs"))
             return False
 
         elif any([a[1] for a in crs]):
-            self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
                 self.tr("Layers have to be in a projected crs"))
@@ -372,20 +373,23 @@ class DistanceCartogram:
         image_ids = [ft[img_id_field] for ft in img_lyr.getFeatures()]
         set_source_ids = set(source_ids)
         set_image_ids = set(image_ids)
+
+        self.dlg.msg_bar.clearWidgets()
+
         if len(source_ids) != len(set_source_ids) \
                 or len(image_ids) != len(set_image_ids):
-            self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
                 self.tr("Identifiant values have to be uniques"))
             return False
+
         if len(set_source_ids.intersection(set_image_ids)) < 3:
-            self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
                 self.tr("Not enough matching features between "
                         "source and image layer"))
             return False
+
         return True
 
     def read_matrix(self, filepath):
@@ -397,8 +401,10 @@ class DistanceCartogram:
 
         if not filepath:
             return
+
+        self.dlg.msg_bar.clearWidgets()
+
         if not os.path.exists(filepath) or os.path.isdir(filepath):
-            self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
                 self.tr("File {} not found".format(filepath)))
@@ -421,7 +427,6 @@ class DistanceCartogram:
                 try:
                     self.time_matrix = np.array(d, dtype=np.float)
                 except ValueError as err:
-                    self.dlg.msg_bar.clearWidgets()
                     self.dlg.msg_bar.pushCritical(
                         self.tr("Error"),
                         self.tr(
@@ -429,7 +434,6 @@ class DistanceCartogram:
                             "(excepting columns/lines id) must be numbers"))
                     return
         except Exception as err:
-            self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
                 self.tr("An unexpected error has occurred while reading the "
@@ -445,7 +449,6 @@ class DistanceCartogram:
         # FIXME : ...
         if not any(k in line_ix for k in col_ix.keys()):
             self.time_matrix = None
-            self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"), # FIXME : change message
                 self.tr("Lines and columns index have to be the same"))
