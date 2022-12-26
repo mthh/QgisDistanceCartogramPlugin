@@ -805,26 +805,7 @@ def get_image_points(
         if i.name() == id_field
     ][0]
     source_layer_dict = {}
-    # xform = None
-    # if source_layer.crs().isGeographic():
-    #     xform = QgsCoordinateTransform(
-    #         source_layer.crs(),
-    #         QgsCoordinateReferenceSystem(
-    #             "+proj=robin +lon_0=0 +x_0=0 +y_0=0 "
-    #             "+ellps=WGS84 +datum=WGS84 +units=m +no_defs"),
-    #         QgsProject.instance())
-    #     for ft in source_layer.getFeatures():
-    #         id_value = str(ft[id_field])
-    #         if id_value not in idx:
-    #             continue
-    #         source_layer_dict[id_value] = {
-    #             "geometry": QgsGeometry.fromPointXY(
-    #                 xform.transform(ft.geometry().asPoint())),
-    #             "dist_euclidienne": None,
-    #             "deplacement": None,
-    #             "time": mat_extract[idx[id_value]],
-    #         }
-    # else:
+
     for ft in source_layer.getFeatures():
         id_value = str(ft[id_field])
         if id_value not in dest_idx:
@@ -897,20 +878,9 @@ def get_image_points(
         image_layer.startEditing()
         image_layer.setCrs(source_layer.crs())
 
-        # if xform:
-        #     xform = QgsCoordinateTransform(
-        #         QgsCoordinateReferenceSystem(
-        #             "+proj=robin +lon_0=0 +x_0=0 +y_0=0 "
-        #             "+ellps=WGS84 +datum=WGS84 +units=m +no_defs"),
-        #         source_layer.crs(),
-        #         QgsProject.instance())
-
         for ix, geom in zip(ids, res_geoms):
             feature = QgsFeature()
-            feature.setGeometry(geom
-                # if not xform
-                # else QgsGeometry.fromPointXY(xform.transform(geom.asPoint()))
-                )
+            feature.setGeometry(geom)
             feature.setAttributes([QVariant(ix)])
             image_layer.addFeature(feature, QgsFeatureSink.FastInsert)
         image_layer.commitChanges()
