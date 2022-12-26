@@ -1,6 +1,14 @@
 Changes
 =======
 
+0.3 (2022-12-26)
+------------------
+
+- Fix bug with displacement in some conditions
+
+- Fix bug with argument of progressBar setMaximum (which expects integer value).
+
+
 0.2 (2018-11-23)
 ------------------
 
