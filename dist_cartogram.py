@@ -859,7 +859,7 @@ def get_image_points(
         else:
             deplacement = 1 + (deplacement - 1) * factor
             p2 = (coords[0], coords[1])
-            li = extrapole_line(p1, p2, 10)
+            li = extrapole_line(p1, p2, 2 * deplacement)
             p = li.interpolate(deplacement * item['dist_euclidienne'])
         _coords = json.loads(p.asJson())['coordinates']
         ids.append(ix)
