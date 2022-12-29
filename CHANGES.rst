@@ -1,6 +1,18 @@
 Changes
 =======
 
+0.4 (unrealeased)
+-----------------
+
+- Fixes the displacement of source point when the image point is very distant.
+
+- Fix some numpy deprecation warning.
+
+- Slightly change strategy for activating the OK button in the Dialog.
+
+- Use __geo_interface__ instead of asJson when extracting coordinates of source / image points.
+
+
 0.3 (2022-12-26)
 ------------------
 
