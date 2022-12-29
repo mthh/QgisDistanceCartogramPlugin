@@ -132,6 +132,9 @@ class DistanceCartogram:
         self.dlg.refFeatureComboBox.currentIndexChanged.connect(
             self.state_ok_button)
 
+        self.dlg.refFeatureComboBox.activated.connect(
+            self.state_ok_button)
+
         # Params for second tab:
         self.dlg.pointLayerComboBox_2.setFilters(
             QgsMapLayerProxyModel.PointLayer)
@@ -446,18 +449,19 @@ class DistanceCartogram:
             )
             return
 
-        # FIXME : ...
         if not any(k in line_ix for k in col_ix.keys()):
             self.time_matrix = None
             self.dlg.msg_bar.pushCritical(
-                self.tr("Error"), # FIXME : change message
-                self.tr("Lines and columns index have to be the same"))
+                self.tr("Error"),
+                self.tr("Lines and columns index have to be (at least partially) the same"))
             return
 
         self.dlg.refFeatureComboBox.clear()
         self.dlg.refFeatureComboBox.addItems(list(sorted(line_ix.keys())))
+        self.dlg.refFeatureComboBox.setCurrentIndex(0)
         self.col_ix = col_ix
         self.line_ix = line_ix
+        self.state_ok_button()
 
     def updateStatusMessage(self, message=""):
         try:
@@ -501,15 +505,19 @@ class DistanceCartogram:
             d = self.dlg.mFieldComboBox.currentIndex()
             e = self.dlg.matrixQgsFileWidget.filePath()
 
-            if a == -1 or b == -1 or c == -1 or d == -1 \
-                    or not self.check_values_id_field(
-                            self.dlg.pointLayerComboBox.currentLayer(),
-                            self.dlg.mFieldComboBox.currentField()) or not e:
+            if a == -1 or b == -1:
                 result = False
+
             else:
                 result = self.check_layers_crs((
                     self.dlg.pointLayerComboBox.currentLayer(),
                     self.dlg.backgroundLayerComboBox.currentLayer()))
+
+                if c == -1 or d == -1 \
+                        or not self.check_values_id_field(
+                                self.dlg.pointLayerComboBox.currentLayer(),
+                                self.dlg.mFieldComboBox.currentField()) or not e:
+                    result = False
 
         else:
             a = self.dlg.backgroundLayerComboBox_2.currentIndex()
@@ -740,22 +748,22 @@ class DistanceCartogram:
                         extent_bg_layer.xMinimum(),
                         extent_source_layer.xMinimum(),
                         extent_image_layer.xMinimum(),
-                        ]),
+                    ]),
                     min([
                         extent_bg_layer.yMinimum(),
                         extent_source_layer.yMinimum(),
                         extent_image_layer.yMinimum(),
-                        ]),
+                    ]),
                     max([
                         extent_bg_layer.xMaximum(),
                         extent_source_layer.xMaximum(),
                         extent_image_layer.xMaximum(),
-                        ]),
+                    ]),
                     max([
                         extent_bg_layer.yMaximum(),
                         extent_source_layer.yMaximum(),
                         extent_image_layer.yMaximum(),
-                        ])
+                    ])
                 )
                 self.startWorker(source_to_use, image_to_use,
                                  precision, max_extent, [background_layer])
@@ -833,7 +841,7 @@ def get_image_points(
     res_geoms = []
     ids = []
     image_layer = None
-    coords = json.loads(ref_geometry.asJson())['coordinates']
+    coords = ref_geometry.__geo_interface__['coordinates']
     x1, y1 = coords[0], coords[1]
     p1 = (x1, y1)
     for ix in source_layer_dict.keys():
@@ -846,7 +854,7 @@ def get_image_points(
             continue
         item = source_layer_dict[ix]
         deplacement = item['deplacement']
-        coords = json.loads(item['geometry'].asJson())['coordinates']
+        coords = item['geometry'].__geo_interface__['coordinates']
         if deplacement < 1:
             deplacement = 1 + (deplacement - 1) * factor
             li = QgsGeometry.fromWkt(
@@ -858,7 +866,7 @@ def get_image_points(
             p2 = (coords[0], coords[1])
             li = extrapole_line(p1, p2, 2 * deplacement)
             p = li.interpolate(deplacement * item['dist_euclidienne'])
-        _coords = json.loads(p.asJson())['coordinates']
+        _coords = p.__geo_interface__['coordinates']
         ids.append(ix)
         if display_image_points:
             res_geoms.append(p)
