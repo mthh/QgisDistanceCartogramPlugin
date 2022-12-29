@@ -425,7 +425,7 @@ class DistanceCartogram:
                     d.append(data[1:])
                     line_ix[data[0]] = i
                 try:
-                    self.time_matrix = np.array(d, dtype=np.float)
+                    self.time_matrix = np.array(d, dtype=float)
                 except ValueError as err:
                     self.dlg.msg_bar.pushCritical(
                         self.tr("Error"),
@@ -510,7 +510,6 @@ class DistanceCartogram:
                 result = self.check_layers_crs((
                     self.dlg.pointLayerComboBox.currentLayer(),
                     self.dlg.backgroundLayerComboBox.currentLayer()))
-                # result = True
 
         else:
             a = self.dlg.backgroundLayerComboBox_2.currentIndex()
@@ -531,8 +530,6 @@ class DistanceCartogram:
                     self.dlg.pointLayerComboBox_2.currentLayer(),
                     self.dlg.imagePointLayerComboBox_2.currentLayer(),
                     self.dlg.backgroundLayerComboBox_2.currentLayer()))
-                #
-                # result = True
 
         self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(result)
 
