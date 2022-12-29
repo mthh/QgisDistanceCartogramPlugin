@@ -8,7 +8,7 @@ deformations (calculated using Waldo Tobler's bidimensional regression) to fit i
 
 The relation between the source points and the image points must depend on the studied theme: positions in access time or estimated positions in spatial cognition for example.
 
-**DistanceCartogram QGIS plugin** is currently available in two languages (english and french) and allows to create distance cartograms in two ways:
+**DistanceCartogram QGIS plugin** is currently available in two languages (English and French) and allows you to create distance cartograms in two ways:
 
 * by providing a **layer of points** and a **time matrix between them** (used to create the image points layer)
 * by providing **2 layers of related points** : the source points and the image points.
