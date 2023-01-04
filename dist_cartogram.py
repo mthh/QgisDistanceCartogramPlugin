@@ -679,7 +679,14 @@ class DistanceCartogram:
                 }
                 self.updateStatusMessage(
                     self.tr("Creation of image points layer"))
-                source_to_use, image_to_use, image_layer = \
+                # We create the layer of 'image' points from the layer
+                # of 'source' points.
+                # We (obviously) skip features whose geometry is Null / empty
+                # (and return a count of them in the unused_points variable).
+                # As these points aren't displayed on the map, I think
+                # it is not necessary to warn the user about that
+                # (but this may change in the future).
+                source_to_use, image_to_use, image_layer, unused_points = \
                     get_image_points(source_layer, id_field,
                                      mat_extract, id_ref_feature,
                                      dest_idx, deplacement_factor,
@@ -838,6 +845,7 @@ def get_image_points(
         source_layer_dict[ix]['deplacement'] = \
             ref_vitesse / source_layer_dict[ix]['vitesse']
     source_to_use, image_to_use = [], []
+    unused_point = 0
     res_geoms = []
     ids = []
     image_layer = None
@@ -854,24 +862,27 @@ def get_image_points(
             continue
         item = source_layer_dict[ix]
         deplacement = item['deplacement']
-        coords = item['geometry'].__geo_interface__['coordinates']
-        if deplacement < 1:
-            deplacement = 1 + (deplacement - 1) * factor
-            li = QgsGeometry.fromWkt(
-                """LINESTRING ({} {}, {} {})"""
-                .format(p1[0], p1[1], coords[0], coords[1]))
-            p = li.interpolate(deplacement * item['dist_euclidienne'])
+        if not item['geometry'].isNull() and not item['geometry'].isEmpty():
+            coords = item['geometry'].__geo_interface__['coordinates']
+            if deplacement < 1:
+                deplacement = 1 + (deplacement - 1) * factor
+                li = QgsGeometry.fromWkt(
+                    """LINESTRING ({} {}, {} {})"""
+                    .format(p1[0], p1[1], coords[0], coords[1]))
+                p = li.interpolate(deplacement * item['dist_euclidienne'])
+            else:
+                deplacement = 1 + (deplacement - 1) * factor
+                p2 = (coords[0], coords[1])
+                li = extrapole_line(p1, p2, 2 * deplacement)
+                p = li.interpolate(deplacement * item['dist_euclidienne'])
+            _coords = p.__geo_interface__['coordinates']
+            ids.append(ix)
+            if display_image_points:
+                res_geoms.append(p)
+            source_to_use.append(Point(coords[0], coords[1]))
+            image_to_use.append(Point(_coords[0], _coords[1]))
         else:
-            deplacement = 1 + (deplacement - 1) * factor
-            p2 = (coords[0], coords[1])
-            li = extrapole_line(p1, p2, 2 * deplacement)
-            p = li.interpolate(deplacement * item['dist_euclidienne'])
-        _coords = p.__geo_interface__['coordinates']
-        ids.append(ix)
-        if display_image_points:
-            res_geoms.append(p)
-        source_to_use.append(Point(coords[0], coords[1]))
-        image_to_use.append(Point(_coords[0], _coords[1]))
+            unused_point += 1
 
     if display_image_points:
         image_layer = QgsVectorLayer(
@@ -889,4 +900,5 @@ def get_image_points(
             feature.setAttributes([QVariant(ix)])
             image_layer.addFeature(feature, QgsFeatureSink.FastInsert)
         image_layer.commitChanges()
-    return (source_to_use, image_to_use, image_layer)
+
+    return (source_to_use, image_to_use, image_layer, unused_point)
