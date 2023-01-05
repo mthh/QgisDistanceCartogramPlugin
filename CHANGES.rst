@@ -1,8 +1,8 @@
 Changes
 =======
 
-Unreleased
-----------
+0.5 (2023-01-05)
+----------------
 
 - Skip points with null / empty geometry when creating layer of 'image' points
   (fixes a bug occurring when the layer of 'source' points contains empty geometries).
