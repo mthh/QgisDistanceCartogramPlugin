@@ -34,7 +34,7 @@ Notes:
 .. image:: img/screenshot500.png
   :align: center
 
-.. _Darcy: http://thema.univ-fcomte.fr/production/logiciels/16-categories-en-francais/cat-productions-fr/cat-logiciels-fr/294-art-darcy
+.. _Darcy: https://sourcesup.renater.fr/www/transcarto/darcy/
 .. _Multidimensional scaling (MDS): https://en.wikipedia.org/wiki/Multidimensional_scaling
 
 
