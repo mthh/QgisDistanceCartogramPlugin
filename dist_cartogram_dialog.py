@@ -23,6 +23,7 @@
 """
 
 from PyQt5 import QtWidgets
+
 try:
     from .dist_cartogram_dialog_baseUi import Ui_DistCartogramDialogBase
 except:

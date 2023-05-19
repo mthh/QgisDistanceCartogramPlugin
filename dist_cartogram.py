@@ -22,7 +22,6 @@
  ***************************************************************************/
 """
 import numpy as np
-import json
 import csv
 import os.path
 
@@ -48,7 +47,6 @@ from PyQt5.QtWidgets import (
 from qgis.core import (
     Qgis,
     QgsCoordinateReferenceSystem,
-    QgsCoordinateTransform,
     QgsFeature,
     QgsFeatureSink,
     QgsGeometry,
@@ -61,12 +59,16 @@ from qgis.gui import QgsMessageBar
 
 # Initialize Qt resources from file resources.py
 from .resources import *
+
 # Import the code for the dialog
 from .dist_cartogram_dialog import DistCartogramDialog
+
 # Code for the small dialog displayed when sample dataset is added
 from .dist_cartogram_dataset_boxUi import DatasetDialog
+
 # Helpers to manipulate data to prepare for bidimensionnal regression
 from .grid import Point, extrapole_line
+
 # QThread worker to compute the cartogram in babkground
 from .worker import DistCartogramWorker
 
@@ -87,17 +89,16 @@ class DistanceCartogram:
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
-        locale = QSettings().value('locale/userLocale')[0:2]
+        locale = QSettings().value("locale/userLocale")[0:2]
         locale_path = os.path.join(
-            self.plugin_dir,
-            'i18n',
-            'DistanceCartogram_{}.qm'.format(locale))
+            self.plugin_dir, "i18n", "DistanceCartogram_{}.qm".format(locale)
+        )
 
         if os.path.exists(locale_path):
             self.translator = QTranslator()
             self.translator.load(locale_path)
 
-            if qVersion() > '4.3.3':
+            if qVersion() > "4.3.3":
                 QCoreApplication.installTranslator(self.translator)
 
         # Create the dialog (after translation) and keep reference
@@ -111,60 +112,50 @@ class DistanceCartogram:
         self.time_matrix = None
 
         # Params for first tab:
-        self.dlg.pointLayerComboBox.setFilters(
-            QgsMapLayerProxyModel.PointLayer)
-        self.dlg.pointLayerComboBox.layerChanged.connect(
-            self.fill_field_combo_box)
+        self.dlg.pointLayerComboBox.setFilters(QgsMapLayerProxyModel.PointLayer)
+        self.dlg.pointLayerComboBox.layerChanged.connect(self.fill_field_combo_box)
 
         self.dlg.backgroundLayerComboBox.setFilters(
-            QgsMapLayerProxyModel.LineLayer
-            | QgsMapLayerProxyModel.PolygonLayer)
-        self.dlg.backgroundLayerComboBox.layerChanged.connect(
-            self.state_ok_button)
+            QgsMapLayerProxyModel.LineLayer | QgsMapLayerProxyModel.PolygonLayer
+        )
+        self.dlg.backgroundLayerComboBox.layerChanged.connect(self.state_ok_button)
 
-        self.dlg.matrixQgsFileWidget.setFilter('*.csv')
-        self.dlg.matrixQgsFileWidget.fileChanged.connect(
-            self.read_matrix)
+        self.dlg.matrixQgsFileWidget.setFilter("*.csv")
+        self.dlg.matrixQgsFileWidget.fileChanged.connect(self.read_matrix)
 
-        self.dlg.mFieldComboBox.fieldChanged.connect(
-            self.state_ok_button)
+        self.dlg.mFieldComboBox.fieldChanged.connect(self.state_ok_button)
 
-        self.dlg.refFeatureComboBox.currentIndexChanged.connect(
-            self.state_ok_button)
+        self.dlg.refFeatureComboBox.currentIndexChanged.connect(self.state_ok_button)
 
-        self.dlg.refFeatureComboBox.activated.connect(
-            self.state_ok_button)
+        self.dlg.refFeatureComboBox.activated.connect(self.state_ok_button)
 
         # Params for second tab:
-        self.dlg.pointLayerComboBox_2.setFilters(
-            QgsMapLayerProxyModel.PointLayer)
+        self.dlg.pointLayerComboBox_2.setFilters(QgsMapLayerProxyModel.PointLayer)
         self.dlg.pointLayerComboBox_2.layerChanged.connect(
-            self.fill_field_combo_box_source)
+            self.fill_field_combo_box_source
+        )
 
-        self.dlg.imagePointLayerComboBox_2.setFilters(
-            QgsMapLayerProxyModel.PointLayer)
+        self.dlg.imagePointLayerComboBox_2.setFilters(QgsMapLayerProxyModel.PointLayer)
         self.dlg.imagePointLayerComboBox_2.layerChanged.connect(
-            self.fill_field_combo_box_image)
+            self.fill_field_combo_box_image
+        )
 
         self.dlg.backgroundLayerComboBox_2.setFilters(
-            QgsMapLayerProxyModel.LineLayer
-            | QgsMapLayerProxyModel.PolygonLayer)
-        self.dlg.backgroundLayerComboBox_2.layerChanged.connect(
-            self.state_ok_button)
+            QgsMapLayerProxyModel.LineLayer | QgsMapLayerProxyModel.PolygonLayer
+        )
+        self.dlg.backgroundLayerComboBox_2.layerChanged.connect(self.state_ok_button)
 
-        self.dlg.mFieldComboBox_2.fieldChanged.connect(
-            self.state_ok_button)
+        self.dlg.mFieldComboBox_2.fieldChanged.connect(self.state_ok_button)
 
-        self.dlg.mImageFieldComboBox_2.fieldChanged.connect(
-            self.state_ok_button)
+        self.dlg.mImageFieldComboBox_2.fieldChanged.connect(self.state_ok_button)
 
         self.dlg.button_box_help.helpRequested.connect(self.show_help)
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&DistanceCartogram')
+        self.menu = self.tr("&DistanceCartogram")
         # TODO: We are going to let the user set this up in a future iteration
-        self.toolbar = self.iface.addToolBar(u'DistanceCartogram')
-        self.toolbar.setObjectName(u'DistanceCartogram')
+        self.toolbar = self.iface.addToolBar("DistanceCartogram")
+        self.toolbar.setObjectName("DistanceCartogram")
         self.fill_file_widget_with_sample_value = False
 
     # noinspection PyMethodMayBeStatic
@@ -180,19 +171,20 @@ class DistanceCartogram:
         :rtype: QString
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('DistanceCartogram', message)
+        return QCoreApplication.translate("DistanceCartogram", message)
 
     def add_action(
-            self,
-            icon_path,
-            text,
-            callback,
-            enabled_flag=True,
-            add_to_menu=True,
-            add_to_toolbar=True,
-            status_tip=None,
-            whats_this=None,
-            parent=None):
+        self,
+        icon_path,
+        text,
+        callback,
+        enabled_flag=True,
+        add_to_menu=True,
+        add_to_toolbar=True,
+        status_tip=None,
+        whats_this=None,
+        parent=None,
+    ):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -247,9 +239,7 @@ class DistanceCartogram:
             self.toolbar.addAction(action)
 
         if add_to_menu:
-            self.iface.addPluginToVectorMenu(
-                self.menu,
-                action)
+            self.iface.addPluginToVectorMenu(self.menu, action)
 
         self.actions.append(action)
 
@@ -258,56 +248,56 @@ class DistanceCartogram:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/dist_cartogram/icon.png'
+        icon_path = ":/plugins/dist_cartogram/icon.png"
         self.add_action(
             icon_path,
-            text=self.tr(u'Create distance cartogram'),
+            text=self.tr("Create distance cartogram"),
             callback=self.run,
-            parent=self.iface.mainWindow())
+            parent=self.iface.mainWindow(),
+        )
         self.add_action(
             icon_path,
-            text=self.tr(u'Add sample dataset'),
+            text=self.tr("Add sample dataset"),
             callback=self.add_sample_dataset,
             parent=self.iface.mainWindow(),
-            add_to_toolbar=False)
+            add_to_toolbar=False,
+        )
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
-            self.iface.removePluginVectorMenu(
-                self.tr(u'&DistanceCartogram'),
-                action)
+            self.iface.removePluginVectorMenu(self.tr("&DistanceCartogram"), action)
             self.iface.removeToolBarIcon(action)
         # remove the toolbar
         del self.toolbar
 
     def show_help(self):
         """Display application help to the user."""
-        help_file = 'file:///{}/help/index.html'.format(self.plugin_dir)
+        help_file = "file:///{}/help/index.html".format(self.plugin_dir)
         QDesktopServices.openUrl(QUrl(help_file))
 
     def add_sample_dataset(self):
-        base_uri = '|'.join([
-            os.path.join(self.plugin_dir, 'data', 'prefecture_FRA.gpkg'),
-            'layername={}',
-            ])
+        base_uri = "|".join(
+            [
+                os.path.join(self.plugin_dir, "data", "prefecture_FRA.gpkg"),
+                "layername={}",
+            ]
+        )
 
         layerDpt = self.iface.addVectorLayer(
-            base_uri.format('departement'),
-            'departement',
-            'ogr')
+            base_uri.format("departement"), "departement", "ogr"
+        )
 
         layerPref = self.iface.addVectorLayer(
-            base_uri.format('prefecture'),
-            'prefecture',
-            'ogr')
+            base_uri.format("prefecture"), "prefecture", "ogr"
+        )
 
         crs = QgsCoordinateReferenceSystem("EPSG:2154")
 
         layerDpt.setCrs(crs)
         layerPref.setCrs(crs)
 
-        csv_path = os.path.join(self.plugin_dir, 'data', 'mat.csv')
+        csv_path = os.path.join(self.plugin_dir, "data", "mat.csv")
 
         dataset_dialog = DatasetDialog()
         dataset_dialog.show()
@@ -339,13 +329,14 @@ class DistanceCartogram:
         if not all([crs[0][0] == authid[0] for authid in crs]):
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
-                self.tr("Layers have to be in the same (projected) crs"))
+                self.tr("Layers have to be in the same (projected) crs"),
+            )
             return False
 
         elif any([a[1] for a in crs]):
             self.dlg.msg_bar.pushCritical(
-                self.tr("Error"),
-                self.tr("Layers have to be in a projected crs"))
+                self.tr("Error"), self.tr("Layers have to be in a projected crs")
+            )
             return False
 
         return True
@@ -358,20 +349,17 @@ class DistanceCartogram:
             self.dlg.msg_bar.clearWidgets()
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
-                self.tr("No match between point layer ID and matrix ID"))
+                self.tr("No match between point layer ID and matrix ID"),
+            )
             return False
         self.dlg.msg_bar.clearWidgets()
         self.dlg.msg_bar.pushSuccess(
             self.tr("Success"),
-            self.tr("Matches found between point layer ID and matrix ID"))
+            self.tr("Matches found between point layer ID and matrix ID"),
+        )
         return True
 
-    def check_match_id_image_source(
-            self,
-            src_lyr,
-            src_id_field,
-            img_lyr,
-            img_id_field):
+    def check_match_id_image_source(self, src_lyr, src_id_field, img_lyr, img_id_field):
         source_ids = [ft[src_id_field] for ft in src_lyr.getFeatures()]
         image_ids = [ft[img_id_field] for ft in img_lyr.getFeatures()]
         set_source_ids = set(source_ids)
@@ -379,18 +367,21 @@ class DistanceCartogram:
 
         self.dlg.msg_bar.clearWidgets()
 
-        if len(source_ids) != len(set_source_ids) \
-                or len(image_ids) != len(set_image_ids):
+        if len(source_ids) != len(set_source_ids) or len(image_ids) != len(
+            set_image_ids
+        ):
             self.dlg.msg_bar.pushCritical(
-                self.tr("Error"),
-                self.tr("Identifiant values have to be uniques"))
+                self.tr("Error"), self.tr("Identifiant values have to be uniques")
+            )
             return False
 
         if len(set_source_ids.intersection(set_image_ids)) < 3:
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
-                self.tr("Not enough matching features between "
-                        "source and image layer"))
+                self.tr(
+                    "Not enough matching features between " "source and image layer"
+                ),
+            )
             return False
 
         return True
@@ -409,13 +400,12 @@ class DistanceCartogram:
 
         if not os.path.exists(filepath) or os.path.isdir(filepath):
             self.dlg.msg_bar.pushCritical(
-                self.tr("Error"),
-                self.tr("File {} not found".format(filepath)))
+                self.tr("Error"), self.tr("File {} not found".format(filepath))
+            )
             return
         try:
-            with open(filepath, 'r') as dest_f:
-                data_iter = csv.reader(
-                    dest_f, quotechar='"')
+            with open(filepath, "r") as dest_f:
+                data_iter = csv.reader(dest_f, quotechar='"')
                 header = next(data_iter)
                 zz = 0
                 for i, _id in enumerate(header):
@@ -429,23 +419,34 @@ class DistanceCartogram:
                     line_ix[data[0]] = i
                 try:
                     self.time_matrix = np.array(d, dtype=float)
+
                 except ValueError as err:
                     self.dlg.msg_bar.pushCritical(
                         self.tr("Error"),
                         self.tr(
                             "Error while reading the matrix - All values "
-                            "(excepting columns/lines id) must be numbers"))
+                            "(excepting columns/lines id) must be numbers"
+                        ),
+                    )
+
+                    QgsMessageLog.logMessage(
+                        "{}: {}".format(err.__class__, err),
+                        level=Qgis.Critical,
+                        tag="Plugins",
+                    )
                     return
+
         except Exception as err:
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
-                self.tr("An unexpected error has occurred while reading the "
-                        "CSV matrix. Please see the “Plugins” section of the "
-                        "message log for details."))
+                self.tr(
+                    "An unexpected error has occurred while reading the "
+                    "CSV matrix. Please see the “Plugins” section of the "
+                    "message log for details."
+                ),
+            )
             QgsMessageLog.logMessage(
-                '{}: {}'.format(err.__class__, err),
-                level=Qgis.Critical,
-                tag="Plugins"
+                "{}: {}".format(err.__class__, err), level=Qgis.Critical, tag="Plugins"
             )
             return
 
@@ -453,7 +454,10 @@ class DistanceCartogram:
             self.time_matrix = None
             self.dlg.msg_bar.pushCritical(
                 self.tr("Error"),
-                self.tr("Lines and columns index have to be (at least partially) the same"))
+                self.tr(
+                    "Lines and columns index have to be (at least partially) the same"
+                ),
+            )
             return
 
         self.dlg.refFeatureComboBox.clear()
@@ -471,9 +475,7 @@ class DistanceCartogram:
 
     def updateProgressBar(self, increase=1):
         try:
-            self.progressBar.setValue(
-                self.progressBar.value() + increase
-            )
+            self.progressBar.setValue(self.progressBar.value() + increase)
         except:
             pass
 
@@ -509,14 +511,22 @@ class DistanceCartogram:
                 result = False
 
             else:
-                result = self.check_layers_crs((
-                    self.dlg.pointLayerComboBox.currentLayer(),
-                    self.dlg.backgroundLayerComboBox.currentLayer()))
+                result = self.check_layers_crs(
+                    (
+                        self.dlg.pointLayerComboBox.currentLayer(),
+                        self.dlg.backgroundLayerComboBox.currentLayer(),
+                    )
+                )
 
-                if c == -1 or d == -1 \
-                        or not self.check_values_id_field(
-                                self.dlg.pointLayerComboBox.currentLayer(),
-                                self.dlg.mFieldComboBox.currentField()) or not e:
+                if (
+                    c == -1
+                    or d == -1
+                    or not self.check_values_id_field(
+                        self.dlg.pointLayerComboBox.currentLayer(),
+                        self.dlg.mFieldComboBox.currentField(),
+                    )
+                    or not e
+                ):
                     result = False
 
         else:
@@ -526,26 +536,35 @@ class DistanceCartogram:
             d = self.dlg.imagePointLayerComboBox_2.currentIndex()
             e = self.dlg.mImageFieldComboBox_2.currentIndex()
 
-            if a == -1 or b == -1 or c == -1 or d == -1 or e == -1 \
-                    or not self.check_match_id_image_source(
-                            self.dlg.pointLayerComboBox_2.currentLayer(),
-                            self.dlg.mFieldComboBox_2.currentField(),
-                            self.dlg.imagePointLayerComboBox_2.currentLayer(),
-                            self.dlg.mImageFieldComboBox_2.currentField()):
+            if (
+                a == -1
+                or b == -1
+                or c == -1
+                or d == -1
+                or e == -1
+                or not self.check_match_id_image_source(
+                    self.dlg.pointLayerComboBox_2.currentLayer(),
+                    self.dlg.mFieldComboBox_2.currentField(),
+                    self.dlg.imagePointLayerComboBox_2.currentLayer(),
+                    self.dlg.mImageFieldComboBox_2.currentField(),
+                )
+            ):
                 result = False
             else:
-                result = self.check_layers_crs((
-                    self.dlg.pointLayerComboBox_2.currentLayer(),
-                    self.dlg.imagePointLayerComboBox_2.currentLayer(),
-                    self.dlg.backgroundLayerComboBox_2.currentLayer()))
+                result = self.check_layers_crs(
+                    (
+                        self.dlg.pointLayerComboBox_2.currentLayer(),
+                        self.dlg.imagePointLayerComboBox_2.currentLayer(),
+                        self.dlg.backgroundLayerComboBox_2.currentLayer(),
+                    )
+                )
 
         self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(result)
 
     def startWorker(self, src_pts, img_pts, precision, max_extent, layers):
         worker = DistCartogramWorker(
-            src_pts, img_pts,
-            precision, max_extent,
-            layers, self.display, self.tr)
+            src_pts, img_pts, precision, max_extent, layers, self.display, self.tr
+        )
         thread = QThread()
         worker.moveToThread(thread)
 
@@ -562,20 +581,19 @@ class DistanceCartogram:
         self.thread = thread
 
     def stopWorker(self):
-        if hasattr(self, 'worker'):
+        if hasattr(self, "worker"):
             self.worker.stopped = True
 
     def push_error(self, e, exceptionString):
         self.iface.messageBar().pushCritical(
             self.tr("Error"),
-            self.tr("An error occurred during distance cartogram creation. " +
-                    "Please see the “Plugins” section of the message " +
-                    "log for details."))
-        QgsMessageLog.logMessage(
-            exceptionString,
-            level=Qgis.Critical,
-            tag="Plugins"
+            self.tr(
+                "An error occurred during distance cartogram creation. "
+                + "Please see the “Plugins” section of the message "
+                + "log for details."
+            ),
         )
+        QgsMessageLog.logMessage(exceptionString, level=Qgis.Critical, tag="Plugins")
 
     def workerError(self, e, exceptionString):
         self.push_error(e, exceptionString)
@@ -593,28 +611,30 @@ class DistanceCartogram:
         self.iface.messageBar().popWidget(self.messageBarItem)
 
     def cartogram_complete(
-            self,
-            result_layer=None,
-            source_grid_layer=None,
-            trans_grid_layer=None):
-        if hasattr(self, 'worker') and hasattr(self.worker, 'stopped') \
-                and self.worker.stopped:
+        self, result_layer=None, source_grid_layer=None, trans_grid_layer=None
+    ):
+        if (
+            hasattr(self, "worker")
+            and hasattr(self.worker, "stopped")
+            and self.worker.stopped
+        ):
             return
         if result_layer is not None:
-            if self.display['source_grid']:
+            if self.display["source_grid"]:
                 QgsProject.instance().addMapLayer(source_grid_layer)
-            if self.display['trans_grid']:
+            if self.display["trans_grid"]:
                 QgsProject.instance().addMapLayer(trans_grid_layer)
 
             QgsProject.instance().addMapLayer(result_layer)
 
-            if self.display['image_points']:
+            if self.display["image_points"]:
                 QgsProject.instance().addMapLayer(self.image_layer)
 
             self.iface.messageBar().popWidget(self.messageBarItem)
         else:
             QgsMessageLog.logMessage(
-                self.tr("DistanceCartogram computation cancelled by user"))
+                self.tr("DistanceCartogram computation cancelled by user")
+            )
 
     def run(self):
         """Run method that performs all the real work"""
@@ -624,7 +644,7 @@ class DistanceCartogram:
         # dedicated QgsFileWidget with the path of the sample csv matrix
         if self.fill_file_widget_with_sample_value:
             self.fill_file_widget_with_sample_value = False
-            csv_path = os.path.join(self.plugin_dir, 'data', 'mat.csv')
+            csv_path = os.path.join(self.plugin_dir, "data", "mat.csv")
             self.dlg.matrixQgsFileWidget.setFilePath(csv_path)
         # ...
         self.reset_fields()
@@ -640,8 +660,7 @@ class DistanceCartogram:
             self.progressBar.setMaximum(100)
 
             self.statusMessageLabel = QLabel(self.tr("Starting..."))
-            self.statusMessageLabel.setAlignment(
-                Qt.AlignLeft | Qt.AlignVCenter)
+            self.statusMessageLabel.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
 
             cancelButton = QPushButton(self.tr("Cancel"))
             cancelButton.clicked.connect(self.stopWorker)
@@ -658,8 +677,7 @@ class DistanceCartogram:
             if self.dlg.gridTabWidget.currentIndex() == 0:
                 if self.time_matrix is None:
                     self.read_matrix(self.dlg.matrixQgsFileWidget.filePath())
-                background_layer = \
-                    self.dlg.backgroundLayerComboBox.currentLayer()
+                background_layer = self.dlg.backgroundLayerComboBox.currentLayer()
                 source_layer = self.dlg.pointLayerComboBox.currentLayer()
                 id_ref_feature = self.dlg.refFeatureComboBox.currentText()
                 id_field = self.dlg.mFieldComboBox.currentField()
@@ -668,17 +686,20 @@ class DistanceCartogram:
                 precision = self.dlg.doubleSpinBoxGridPrecision.value()
                 deplacement_factor = self.dlg.doubleSpinBoxDeplacement.value()
 
-                self.progressBar.setMaximum(int(
-                    15 + background_layer.featureCount()
-                    + (source_layer.featureCount() * precision) / 1.5))
+                self.progressBar.setMaximum(
+                    int(
+                        15
+                        + background_layer.featureCount()
+                        + (source_layer.featureCount() * precision) / 1.5
+                    )
+                )
 
                 self.display = {
-                    'source_grid': self.dlg.checkBoxSourceGrid.isChecked(),
-                    'trans_grid': self.dlg.checkBoxTransformedGrid.isChecked(),
-                    'image_points': self.dlg.checkBoxImagePointLayer.isChecked(),
+                    "source_grid": self.dlg.checkBoxSourceGrid.isChecked(),
+                    "trans_grid": self.dlg.checkBoxTransformedGrid.isChecked(),
+                    "image_points": self.dlg.checkBoxImagePointLayer.isChecked(),
                 }
-                self.updateStatusMessage(
-                    self.tr("Creation of image points layer"))
+                self.updateStatusMessage(self.tr("Creation of image points layer"))
                 # We create the layer of 'image' points from the layer
                 # of 'source' points.
                 # We (obviously) skip features whose geometry is Null / empty
@@ -686,42 +707,53 @@ class DistanceCartogram:
                 # As these points aren't displayed on the map, I think
                 # it is not necessary to warn the user about that
                 # (but this may change in the future).
-                source_to_use, image_to_use, image_layer, unused_points = \
-                    get_image_points(source_layer, id_field,
-                                     mat_extract, id_ref_feature,
-                                     dest_idx, deplacement_factor,
-                                     self.display['image_points'])
+                (
+                    source_to_use,
+                    image_to_use,
+                    image_layer,
+                    unused_points,
+                ) = get_image_points(
+                    source_layer,
+                    id_field,
+                    mat_extract,
+                    id_ref_feature,
+                    dest_idx,
+                    deplacement_factor,
+                    self.display["image_points"],
+                )
                 self.updateProgressBar(5)
                 if len(source_to_use) == 0 or len(image_to_use) == 0:
                     self.iface.messageBar().pushCritical(
                         self.tr("Error"),
                         self.tr(
                             "DistanceCartogram: "
-                            "The \"image\" point layer is empty."
+                            'The "image" point layer is empty.'
                             "This is probably due to a problem of "
                             "non-correspondence between the identifiers of the"
                             " features the point layer and the identifiers in "
-                            "the provided matrix."))
+                            "the provided matrix."
+                        ),
+                    )
                     return
                 self.image_layer = image_layer
                 extent_bg_layer = background_layer.extent()
                 extent_source_layer = source_layer.extent()
                 max_extent = (
-                    min(extent_bg_layer.xMinimum(),
-                        extent_source_layer.xMinimum()),
-                    min(extent_bg_layer.yMinimum(),
-                        extent_source_layer.yMinimum()),
-                    max(extent_bg_layer.xMaximum(),
-                        extent_source_layer.xMaximum()),
-                    max(extent_bg_layer.yMaximum(),
-                        extent_source_layer.yMaximum())
+                    min(extent_bg_layer.xMinimum(), extent_source_layer.xMinimum()),
+                    min(extent_bg_layer.yMinimum(), extent_source_layer.yMinimum()),
+                    max(extent_bg_layer.xMaximum(), extent_source_layer.xMaximum()),
+                    max(extent_bg_layer.yMaximum(), extent_source_layer.yMaximum()),
                 )
-                self.startWorker(source_to_use, image_to_use,
-                                 precision, max_extent, [background_layer])
+                self.startWorker(
+                    source_to_use,
+                    image_to_use,
+                    precision,
+                    max_extent,
+                    [background_layer],
+                )
 
             else:
-                background_layer = \
-                    self.dlg.backgroundLayerComboBox_2.currentLayer()
+                background_layer = self.dlg.backgroundLayerComboBox_2.currentLayer()
                 source_layer = self.dlg.pointLayerComboBox_2.currentLayer()
                 id_field_source = self.dlg.mFieldComboBox_2.currentField()
                 image_layer = self.dlg.imagePointLayerComboBox_2.currentLayer()
@@ -729,21 +761,29 @@ class DistanceCartogram:
                 precision = self.dlg.doubleSpinBoxGridPrecision_2.value()
                 #
                 self.display = {
-                    'source_grid': self.dlg.checkBoxSourceGrid_2.isChecked(),
-                    'trans_grid': self.dlg.checkBoxTransformedGrid_2.isChecked(),
-                    'image_points': False,
+                    "source_grid": self.dlg.checkBoxSourceGrid_2.isChecked(),
+                    "trans_grid": self.dlg.checkBoxTransformedGrid_2.isChecked(),
+                    "image_points": False,
                 }
-                self.progressBar.setMaximum(int(
-                    15 + background_layer.featureCount()
-                    + (precision * image_layer.featureCount()) / 1.5))
+                self.progressBar.setMaximum(
+                    int(
+                        15
+                        + background_layer.featureCount()
+                        + (precision * image_layer.featureCount()) / 1.5
+                    )
+                )
 
                 if source_layer.featureCount() != image_layer.featureCount():
-                    self.updateStatusMessage(self.tr(
-                        "Number of features differ between source and image "
-                        "layers - Only feature with matching ids will be "
-                        "taken into account"))
+                    self.updateStatusMessage(
+                        self.tr(
+                            "Number of features differ between source and image "
+                            "layers - Only feature with matching ids will be "
+                            "taken into account"
+                        )
+                    )
                 source_to_use, image_to_use = extract_source_image(
-                    source_layer, image_layer, id_field_source, id_field_image)
+                    source_layer, image_layer, id_field_source, id_field_image
+                )
 
                 self.updateProgressBar(5)
 
@@ -751,29 +791,42 @@ class DistanceCartogram:
                 extent_source_layer = source_layer.extent()
                 extent_image_layer = source_layer.extent()
                 max_extent = (
-                    min([
-                        extent_bg_layer.xMinimum(),
-                        extent_source_layer.xMinimum(),
-                        extent_image_layer.xMinimum(),
-                    ]),
-                    min([
-                        extent_bg_layer.yMinimum(),
-                        extent_source_layer.yMinimum(),
-                        extent_image_layer.yMinimum(),
-                    ]),
-                    max([
-                        extent_bg_layer.xMaximum(),
-                        extent_source_layer.xMaximum(),
-                        extent_image_layer.xMaximum(),
-                    ]),
-                    max([
-                        extent_bg_layer.yMaximum(),
-                        extent_source_layer.yMaximum(),
-                        extent_image_layer.yMaximum(),
-                    ])
+                    min(
+                        [
+                            extent_bg_layer.xMinimum(),
+                            extent_source_layer.xMinimum(),
+                            extent_image_layer.xMinimum(),
+                        ]
+                    ),
+                    min(
+                        [
+                            extent_bg_layer.yMinimum(),
+                            extent_source_layer.yMinimum(),
+                            extent_image_layer.yMinimum(),
+                        ]
+                    ),
+                    max(
+                        [
+                            extent_bg_layer.xMaximum(),
+                            extent_source_layer.xMaximum(),
+                            extent_image_layer.xMaximum(),
+                        ]
+                    ),
+                    max(
+                        [
+                            extent_bg_layer.yMaximum(),
+                            extent_source_layer.yMaximum(),
+                            extent_image_layer.yMaximum(),
+                        ]
+                    ),
                 )
-                self.startWorker(source_to_use, image_to_use,
-                                 precision, max_extent, [background_layer])
+                self.startWorker(
+                    source_to_use,
+                    image_to_use,
+                    precision,
+                    max_extent,
+                    [background_layer],
+                )
 
 
 def extract_source_image(source_lyr, image_lyr, id_source, id_image):
@@ -784,33 +837,31 @@ def extract_source_image(source_lyr, image_lyr, id_source, id_image):
 
     for ft in source_lyr.getFeatures():
         temp_source.append(
-            (ft[id_source], ft.geometry().__geo_interface__['coordinates'])
+            (ft[id_source], ft.geometry().__geo_interface__["coordinates"])
         )
 
     for ft in image_lyr.getFeatures():
-        temp_image[ft[id_image]] = \
-            ft.geometry().__geo_interface__['coordinates']
+        temp_image[ft[id_image]] = ft.geometry().__geo_interface__["coordinates"]
 
     for _id_source, geom_source in temp_source:
         geom_image = temp_image.get(_id_source, None)
         if not geom_image:
             continue
-        source_to_use.append(
-            Point(geom_source[0], geom_source[1]))
-        image_to_use.append(
-            Point(geom_image[0], geom_image[1]))
+        source_to_use.append(Point(geom_source[0], geom_source[1]))
+        image_to_use.append(Point(geom_image[0], geom_image[1]))
 
     return (source_to_use, image_to_use)
 
 
 def get_image_points(
-        source_layer,
-        id_field,
-        mat_extract,
-        id_ref_feature,
-        dest_idx,
-        factor,
-        display_image_points):
+    source_layer,
+    id_field,
+    mat_extract,
+    id_ref_feature,
+    dest_idx,
+    factor,
+    display_image_points,
+):
     type_id_field = [
         i.typeName().lower()
         for i in source_layer.fields().toList()
@@ -828,28 +879,31 @@ def get_image_points(
             "deplacement": None,
             "time": mat_extract[dest_idx[id_value]],
         }
-    ref_geometry = source_layer_dict[id_ref_feature]['geometry']
+    ref_geometry = source_layer_dict[id_ref_feature]["geometry"]
     for ix in source_layer_dict.keys():
         if ix == id_ref_feature:
             continue
-        source_layer_dict[ix]['dist_euclidienne'] = \
-            ref_geometry.distance(source_layer_dict[ix]['geometry'])
-        source_layer_dict[ix]['vitesse'] = \
-            source_layer_dict[ix]['dist_euclidienne'] / \
-            source_layer_dict[ix]['time']
+        source_layer_dict[ix]["dist_euclidienne"] = ref_geometry.distance(
+            source_layer_dict[ix]["geometry"]
+        )
+        source_layer_dict[ix]["vitesse"] = (
+            source_layer_dict[ix]["dist_euclidienne"] / source_layer_dict[ix]["time"]
+        )
     ref_vitesse = np.nanmedian(
-        [i['vitesse'] for i in source_layer_dict.values() if 'vitesse' in i])
+        [i["vitesse"] for i in source_layer_dict.values() if "vitesse" in i]
+    )
     for ix in source_layer_dict.keys():
         if ix == id_ref_feature:
             continue
-        source_layer_dict[ix]['deplacement'] = \
-            ref_vitesse / source_layer_dict[ix]['vitesse']
+        source_layer_dict[ix]["deplacement"] = (
+            ref_vitesse / source_layer_dict[ix]["vitesse"]
+        )
     source_to_use, image_to_use = [], []
     unused_point = 0
     res_geoms = []
     ids = []
     image_layer = None
-    coords = ref_geometry.__geo_interface__['coordinates']
+    coords = ref_geometry.__geo_interface__["coordinates"]
     x1, y1 = coords[0], coords[1]
     p1 = (x1, y1)
     for ix in source_layer_dict.keys():
@@ -861,21 +915,23 @@ def get_image_points(
             image_to_use.append(Point(x1, y1))
             continue
         item = source_layer_dict[ix]
-        deplacement = item['deplacement']
-        if not item['geometry'].isNull() and not item['geometry'].isEmpty():
-            coords = item['geometry'].__geo_interface__['coordinates']
+        deplacement = item["deplacement"]
+        if not item["geometry"].isNull() and not item["geometry"].isEmpty():
+            coords = item["geometry"].__geo_interface__["coordinates"]
             if deplacement < 1:
                 deplacement = 1 + (deplacement - 1) * factor
                 li = QgsGeometry.fromWkt(
-                    """LINESTRING ({} {}, {} {})"""
-                    .format(p1[0], p1[1], coords[0], coords[1]))
-                p = li.interpolate(deplacement * item['dist_euclidienne'])
+                    """LINESTRING ({} {}, {} {})""".format(
+                        p1[0], p1[1], coords[0], coords[1]
+                    )
+                )
+                p = li.interpolate(deplacement * item["dist_euclidienne"])
             else:
                 deplacement = 1 + (deplacement - 1) * factor
                 p2 = (coords[0], coords[1])
                 li = extrapole_line(p1, p2, 2 * deplacement)
-                p = li.interpolate(deplacement * item['dist_euclidienne'])
-            _coords = p.__geo_interface__['coordinates']
+                p = li.interpolate(deplacement * item["dist_euclidienne"])
+            _coords = p.__geo_interface__["coordinates"]
             ids.append(ix)
             if display_image_points:
                 res_geoms.append(p)
@@ -887,9 +943,11 @@ def get_image_points(
     if display_image_points:
         image_layer = QgsVectorLayer(
             "Point?crs={}&field={}:{}".format(
-                source_layer.crs().authid(), id_field, type_id_field),
+                source_layer.crs().authid(), id_field, type_id_field
+            ),
             "image_layer",
-            "memory")
+            "memory",
+        )
 
         image_layer.startEditing()
         image_layer.setCrs(source_layer.crs())

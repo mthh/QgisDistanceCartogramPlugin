@@ -33,4 +33,5 @@ def classFactory(iface):  # pylint: disable=invalid-name
     """
     #
     from .dist_cartogram import DistanceCartogram
+
     return DistanceCartogram(iface)

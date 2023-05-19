@@ -14,7 +14,9 @@ The relation between the source points and the image points must depend on the s
 * by providing **2 layers of related points** : the source points and the image points.
 
 
-![png](help/source/img/screenshot500.png)
+![png1](help/source/img/screenshot500.png)
+
+![png2](help/source/img/cartogram-train.png)
 
 Note:
 > This is a [Darcy](https://sourcesup.renater.fr/www/transcarto/darcy/) port regarding to the bidimensional regression and the backgrounds layers deformation.  

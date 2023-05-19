@@ -8,14 +8,13 @@
 
 """
 
-__author__ = 'matthieu.viry@cnrs.fr'
-__date__ = '2018-07-13'
-__copyright__ = 'Copyright 2018, Matthieu Viry'
+__author__ = "matthieu.viry@cnrs.fr"
+__date__ = "2018-07-13"
+__copyright__ = "Copyright 2018, Matthieu Viry"
 
 import unittest
 
 from PyQt5.QtGui import QIcon
-
 
 
 class DistCartogramDialogTest(unittest.TestCase):
@@ -31,14 +30,12 @@ class DistCartogramDialogTest(unittest.TestCase):
 
     def test_icon_png(self):
         """Test we can click OK."""
-        path = ':/plugins/DistCartogram/icon.png'
+        path = ":/plugins/DistCartogram/icon.png"
         icon = QIcon(path)
         self.assertFalse(icon.isNull())
+
 
 if __name__ == "__main__":
     suite = unittest.makeSuite(DistCartogramResourcesTest)
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
-
-
-
