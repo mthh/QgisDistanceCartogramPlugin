@@ -110,8 +110,8 @@ class Grid:
         self.interp_points = None
         self.points = points
         if not rect:
-            rect = Rectangle2D.from_points(points)
-        rect = list(rect.as_bbox())
+            rect = Rectangle2D.from_points(points).as_bbox()
+        rect = list(rect)
         self.rect_width = rect[2] - rect[0]
         self.rect_height = rect[3] - rect[1]
         self.resolution = (
