@@ -56,24 +56,37 @@ def haversine(lon1, lat1, lon2, lat2):
 class Rectangle2D:
     __slots__ = ["height", "width", "x", "y"]
 
-    def __init__(self, height, width, x, y):
-        self.height = height
-        self.width = width
+    def __init__(self, x, y, width, height):
         self.x = x
         self.y = y
+        self.height = height
+        self.width = width
 
     def add(self, pt):
         if pt.x < self.x:
+            self.width += self.x - pt.x
             self.x = pt.x
-        if pt.y < self.y:
-            self.y = pt.y
-        tx = pt.x - self.x
-        ty = pt.y - self.y
-        if tx > self.width:
-            self.width = tx
-        if ty > self.height:
-            self.height = ty
+        elif pt.x > self.x + self.width:
+            self.width = pt.x - self.x
 
+        if pt.y < self.y:
+            self.height += self.y - pt.y
+            self.y = pt.y
+        elif pt.y > self.y + self.height:
+            self.height = pt.y - self.y
+
+    @staticmethod
+    def from_points(points):
+        if len(points) == 0:
+            return Rectangle2D(0, 0, 0, 0)
+        return Rectangle2D.from_bbox(getBoundingRect(points))
+
+    def as_bbox(self):
+        return (self.x, self.y, self.x + self.width, self.y + self.height)
+
+    @staticmethod
+    def from_bbox(bbox):
+        return Rectangle2D(bbox[3] - bbox[1], bbox[2] - bbox[0], bbox[0], bbox[1])
 
 def getBoundingRect(points):
     minx = float("inf")
@@ -97,8 +110,8 @@ class Grid:
         self.interp_points = None
         self.points = points
         if not rect:
-            rect = getBoundingRect(points)
-        rect = list(rect)
+            rect = Rectangle2D.from_points(points)
+        rect = list(rect.as_bbox())
         self.rect_width = rect[2] - rect[0]
         self.rect_height = rect[3] - rect[1]
         self.resolution = (
@@ -223,10 +236,16 @@ class Grid:
         for n in self.nodes:
             n.interp = Point(n.source.x, n.source.y)
 
-        rect = Rectangle2D(0, 0, float("inf"), float("inf"))
+        # We could probably do the following:
+        # rect = Rectangle2D.from_points(self.points)
+        # rect_adj = Rectangle2D.from_points(img_points)
+        # but the original implementation
+        # starts with a point at (0, 0) and we don't want to change that
+        rect = Rectangle2D(0, 0, -1, -1)
         for p in self.points:
             rect.add(p)
-        rect_adj = Rectangle2D(0, 0, float("inf"), float("inf"))
+
+        rect_adj = Rectangle2D(0, 0, -1, -1)
         for p in img_points:
             rect_adj.add(p)
 
