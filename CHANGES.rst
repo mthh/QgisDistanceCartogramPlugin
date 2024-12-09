@@ -1,14 +1,15 @@
 Changes
 =======
 
-Unreleased
-----------
+0.6 (2024-12-09)
+----------------
 
 - Fix bug in the `add` method of Rectangle2D.
 
 - Fix links to Darcy software in README and in documentation.
 
 - Format code with `black` + apply some `ruff` suggestions.
+
 
 0.5 (2023-01-05)
 ----------------
