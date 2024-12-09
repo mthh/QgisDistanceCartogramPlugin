@@ -348,7 +348,7 @@ class Grid:
 
     def get_smoothed(self, i, j):
         get_node = self.get_node
-        if i > 1 and j > 1 and i < self.height - 2 and j < self.width - 2:
+        if 1 < i < self.height - 2 and 1 < j < self.width - 2:
             a = get_node(i - 1, j).interp
             b = get_node(i + 1, j).interp
             c = get_node(i, j - 1).interp
