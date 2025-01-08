@@ -889,7 +889,7 @@ def get_image_points(
         source_layer_dict[ix]["vitesse"] = (
             source_layer_dict[ix]["dist_euclidienne"] / source_layer_dict[ix]["time"]
         )
-    ref_vitesse = np.nanmedian(
+    ref_vitesse = np.nanmean(
         [i["vitesse"] for i in source_layer_dict.values() if "vitesse" in i]
     )
     for ix in source_layer_dict.keys():
