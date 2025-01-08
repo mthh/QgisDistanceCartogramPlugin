@@ -64,7 +64,7 @@ class DistCartogramWorker(QObject):
 
             result_layer = QgsVectorLayer(
                 "{}?crs={}".format(_t, background_layer.crs().authid()),
-                "result_cartogram",
+                "{}_cartogram".format(background_layer.name()),
                 "memory",
             )
             features_to_add = []
@@ -76,7 +76,16 @@ class DistCartogramWorker(QObject):
             for ix, ft in enumerate(background_layer.getFeatures()):
                 ref_geom = ft.geometry()
                 ref_coords = ref_geom.__geo_interface__["coordinates"]
-                if ref_geom.__geo_interface__["type"] == "LineString":
+                if ref_geom.__geo_interface__["type"] == "Point":
+                    new_geom = QgsGeometry.fromPointXY(QgsPointXY(*self.g._interp_point(*ref_coords)))
+                elif ref_geom.__geo_interface__["type"] == "MultiPoint":
+                    new_geom = QgsGeometry.fromMultiPointXY(
+                        [
+                            QgsPointXY(*self.g._interp_point(*ref_coords[ix_coords]))
+                            for ix_coords in range(len(ref_coords))
+                        ]
+                    )
+                elif ref_geom.__geo_interface__["type"] == "LineString":
                     new_geom = QgsGeometry.fromPolyLineXY(
                         [
                             QgsPointXY(*self.g._interp_point(*ref_coords[ix_coords]))
