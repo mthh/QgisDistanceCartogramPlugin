@@ -43,6 +43,7 @@ from PyQt5.QtWidgets import (
     QProgressBar,
     QPushButton,
     QSizePolicy,
+    QListWidgetItem,
 )
 from qgis.core import (
     Qgis,
@@ -54,6 +55,8 @@ from qgis.core import (
     QgsMessageLog,
     QgsProject,
     QgsVectorLayer,
+    QgsMapLayerType,
+    QgsRectangle,
 )
 from qgis.gui import QgsMessageBar
 
@@ -115,11 +118,6 @@ class DistanceCartogram:
         self.dlg.pointLayerComboBox.setFilters(QgsMapLayerProxyModel.PointLayer)
         self.dlg.pointLayerComboBox.layerChanged.connect(self.fill_field_combo_box)
 
-        self.dlg.backgroundLayerComboBox.setFilters(
-            QgsMapLayerProxyModel.LineLayer | QgsMapLayerProxyModel.PolygonLayer
-        )
-        self.dlg.backgroundLayerComboBox.layerChanged.connect(self.state_ok_button)
-
         self.dlg.matrixQgsFileWidget.setFilter("*.csv")
         self.dlg.matrixQgsFileWidget.fileChanged.connect(self.read_matrix)
 
@@ -140,16 +138,12 @@ class DistanceCartogram:
             self.fill_field_combo_box_image
         )
 
-        self.dlg.backgroundLayerComboBox_2.setFilters(
-            QgsMapLayerProxyModel.LineLayer | QgsMapLayerProxyModel.PolygonLayer
-        )
-        self.dlg.backgroundLayerComboBox_2.layerChanged.connect(self.state_ok_button)
-
         self.dlg.mFieldComboBox_2.fieldChanged.connect(self.state_ok_button)
 
         self.dlg.mImageFieldComboBox_2.fieldChanged.connect(self.state_ok_button)
 
         self.dlg.button_box_help.helpRequested.connect(self.show_help)
+
         # Declare instance attributes
         self.actions = []
         self.menu = self.tr("&DistanceCartogram")
@@ -157,6 +151,30 @@ class DistanceCartogram:
         self.toolbar = self.iface.addToolBar("DistanceCartogram")
         self.toolbar.setObjectName("DistanceCartogram")
         self.fill_file_widget_with_sample_value = False
+
+        def update_layers_in_list():
+            # List the layers
+            layers = [l for l in QgsProject.instance().mapLayers().values() if l.type() == QgsMapLayerType.VectorLayer]
+            items = [f'{i.name()} [{i.crs().authid()}]' for i in layers]
+
+            # Clean the content of the widgets
+            self.dlg.backgroundLayersListWidget.clear()
+            self.dlg.backgroundLayersListWidget_2.clear()
+
+            # Add them in our QListWidget:
+            for s in items:
+                items = [QListWidgetItem(s), QListWidgetItem(s)]
+                for i in items:
+                    i.setFlags(i.flags() | Qt.ItemIsUserCheckable)
+                    i.setCheckState(Qt.Unchecked)
+                self.dlg.backgroundLayersListWidget.addItem(items[0])
+                self.dlg.backgroundLayersListWidget_2.addItem(items[1])
+
+        # The logic to keep the layers in our QListWidget synced with the
+        # layers in the QGIS project
+        QgsProject.instance().layersAdded.connect(update_layers_in_list)
+        QgsProject.instance().layersRemoved.connect(update_layers_in_list)
+        update_layers_in_list()
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -497,24 +515,40 @@ class DistanceCartogram:
             self.fill_field_combo_box_image(layer_image)
         self.state_ok_button()
 
+    def has_layers_selected(self, which):
+        widget = getattr(self.dlg, which)
+        for n in range(widget.count()):
+            if widget.item(n).checkState() == Qt.Checked:
+                return True
+
+    def get_layers_selected(self, which):
+        widget = getattr(self.dlg, which)
+        layers = []
+        for n in range(widget.count()):
+            if widget.item(n).checkState() == Qt.Checked:
+                name = widget.item(n).text().rpartition(" ")[0]
+                layer = QgsProject.instance().mapLayersByName(name)[0]
+                layers.append(layer)
+        return layers
+
     def state_ok_button(self):
         result = False
 
         if self.dlg.gridTabWidget.currentIndex() == 0:
             a = self.dlg.pointLayerComboBox.currentIndex()
-            b = self.dlg.backgroundLayerComboBox.currentIndex()
+            b = self.has_layers_selected("backgroundLayersListWidget")
             c = self.dlg.refFeatureComboBox.currentIndex()
             d = self.dlg.mFieldComboBox.currentIndex()
             e = self.dlg.matrixQgsFileWidget.filePath()
 
-            if a == -1 or b == -1:
+            if a == -1 or b == False:
                 result = False
 
             else:
                 result = self.check_layers_crs(
                     (
                         self.dlg.pointLayerComboBox.currentLayer(),
-                        self.dlg.backgroundLayerComboBox.currentLayer(),
+                        *self.get_layers_selected("backgroundLayersListWidget"),
                     )
                 )
 
@@ -530,14 +564,14 @@ class DistanceCartogram:
                     result = False
 
         else:
-            a = self.dlg.backgroundLayerComboBox_2.currentIndex()
+            a = self.has_layers_selected("backgroundLayersListWidget_2")
             b = self.dlg.pointLayerComboBox_2.currentIndex()
             c = self.dlg.mFieldComboBox_2.currentIndex()
             d = self.dlg.imagePointLayerComboBox_2.currentIndex()
             e = self.dlg.mImageFieldComboBox_2.currentIndex()
 
             if (
-                a == -1
+                a == False
                 or b == -1
                 or c == -1
                 or d == -1
@@ -554,8 +588,7 @@ class DistanceCartogram:
                 result = self.check_layers_crs(
                     (
                         self.dlg.pointLayerComboBox_2.currentLayer(),
-                        self.dlg.imagePointLayerComboBox_2.currentLayer(),
-                        self.dlg.backgroundLayerComboBox_2.currentLayer(),
+                        *self.get_layers_selected("backgroundLayersListWidget"),
                     )
                 )
 
@@ -611,7 +644,7 @@ class DistanceCartogram:
         self.iface.messageBar().popWidget(self.messageBarItem)
 
     def cartogram_complete(
-        self, result_layer=None, source_grid_layer=None, trans_grid_layer=None
+        self, result_layers=None, source_grid_layer=None, trans_grid_layer=None
     ):
         if (
             hasattr(self, "worker")
@@ -619,13 +652,14 @@ class DistanceCartogram:
             and self.worker.stopped
         ):
             return
-        if result_layer is not None:
+        if result_layers is not None:
             if self.display["source_grid"]:
                 QgsProject.instance().addMapLayer(source_grid_layer)
             if self.display["trans_grid"]:
                 QgsProject.instance().addMapLayer(trans_grid_layer)
 
-            QgsProject.instance().addMapLayer(result_layer)
+            for result_layer in result_layers:
+                QgsProject.instance().addMapLayer(result_layer)
 
             if self.display["image_points"]:
                 QgsProject.instance().addMapLayer(self.image_layer)
@@ -677,7 +711,7 @@ class DistanceCartogram:
             if self.dlg.gridTabWidget.currentIndex() == 0:
                 if self.time_matrix is None:
                     self.read_matrix(self.dlg.matrixQgsFileWidget.filePath())
-                background_layer = self.dlg.backgroundLayerComboBox.currentLayer()
+                background_layers = self.get_layers_selected('backgroundLayersListWidget')
                 source_layer = self.dlg.pointLayerComboBox.currentLayer()
                 id_ref_feature = self.dlg.refFeatureComboBox.currentText()
                 id_field = self.dlg.mFieldComboBox.currentField()
@@ -686,10 +720,12 @@ class DistanceCartogram:
                 precision = self.dlg.doubleSpinBoxGridPrecision.value()
                 deplacement_factor = self.dlg.doubleSpinBoxDeplacement.value()
 
+                total_features = get_total_features(background_layers)
+
                 self.progressBar.setMaximum(
                     int(
                         15
-                        + background_layer.featureCount()
+                        + total_features
                         + (source_layer.featureCount() * precision) / 1.5
                     )
                 )
@@ -736,24 +772,23 @@ class DistanceCartogram:
                     )
                     return
                 self.image_layer = image_layer
-                extent_bg_layer = background_layer.extent()
-                extent_source_layer = source_layer.extent()
+                extent = get_merged_extent(background_layers + [source_layer])
                 max_extent = (
-                    min(extent_bg_layer.xMinimum(), extent_source_layer.xMinimum()),
-                    min(extent_bg_layer.yMinimum(), extent_source_layer.yMinimum()),
-                    max(extent_bg_layer.xMaximum(), extent_source_layer.xMaximum()),
-                    max(extent_bg_layer.yMaximum(), extent_source_layer.yMaximum()),
+                    extent.xMinimum(),
+                    extent.yMinimum(),
+                    extent.xMaximum(),
+                    extent.yMaximum(),
                 )
                 self.startWorker(
                     source_to_use,
                     image_to_use,
                     precision,
                     max_extent,
-                    [background_layer],
+                    background_layers,
                 )
 
             else:
-                background_layer = self.dlg.backgroundLayerComboBox_2.currentLayer()
+                background_layers = self.get_layers_selected('backgroundLayersListWidget_2')
                 source_layer = self.dlg.pointLayerComboBox_2.currentLayer()
                 id_field_source = self.dlg.mFieldComboBox_2.currentField()
                 image_layer = self.dlg.imagePointLayerComboBox_2.currentLayer()
@@ -765,10 +800,13 @@ class DistanceCartogram:
                     "trans_grid": self.dlg.checkBoxTransformedGrid_2.isChecked(),
                     "image_points": False,
                 }
+
+                total_features = get_total_features(background_layers)
+
                 self.progressBar.setMaximum(
                     int(
                         15
-                        + background_layer.featureCount()
+                        + total_features
                         + (precision * image_layer.featureCount()) / 1.5
                     )
                 )
@@ -787,45 +825,19 @@ class DistanceCartogram:
 
                 self.updateProgressBar(5)
 
-                extent_bg_layer = background_layer.extent()
-                extent_source_layer = source_layer.extent()
-                extent_image_layer = source_layer.extent()
+                extent = get_merged_extent(background_layers + [source_layer, image_layer])
                 max_extent = (
-                    min(
-                        [
-                            extent_bg_layer.xMinimum(),
-                            extent_source_layer.xMinimum(),
-                            extent_image_layer.xMinimum(),
-                        ]
-                    ),
-                    min(
-                        [
-                            extent_bg_layer.yMinimum(),
-                            extent_source_layer.yMinimum(),
-                            extent_image_layer.yMinimum(),
-                        ]
-                    ),
-                    max(
-                        [
-                            extent_bg_layer.xMaximum(),
-                            extent_source_layer.xMaximum(),
-                            extent_image_layer.xMaximum(),
-                        ]
-                    ),
-                    max(
-                        [
-                            extent_bg_layer.yMaximum(),
-                            extent_source_layer.yMaximum(),
-                            extent_image_layer.yMaximum(),
-                        ]
-                    ),
+                    extent.xMinimum(),
+                    extent.yMinimum(),
+                    extent.xMaximum(),
+                    extent.yMaximum(),
                 )
                 self.startWorker(
                     source_to_use,
                     image_to_use,
                     precision,
                     max_extent,
-                    [background_layer],
+                    background_layers,
                 )
 
 
@@ -960,3 +972,16 @@ def get_image_points(
         image_layer.commitChanges()
 
     return (source_to_use, image_to_use, image_layer, unused_point)
+
+
+def get_merged_extent(layers):
+    extent = QgsRectangle()
+    for layer in layers:
+        extent.combineExtentWith(layer.extent())
+    return extent
+
+def get_total_features(layers):
+    total = 0
+    for layer in layers:
+        total += layer.featureCount()
+    return total

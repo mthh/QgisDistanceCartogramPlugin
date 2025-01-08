@@ -48,7 +48,7 @@
      <x>0</x>
      <y>60</y>
      <width>791</width>
-     <height>531</height>
+     <height>541</height>
     </rect>
    </property>
    <property name="currentIndex">
@@ -67,12 +67,18 @@
        <x>10</x>
        <y>10</y>
        <width>771</width>
-       <height>481</height>
+       <height>514</height>
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
        <widget class="QLabel" name="label">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimumSize">
          <size>
           <width>300</width>
@@ -86,29 +92,10 @@
          </size>
         </property>
         <property name="toolTip">
-         <string>The layer to be deformed</string>
+         <string>The layer(s) to be deformed</string>
         </property>
         <property name="text">
-         <string>Background layer</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QgsMapLayerComboBox" name="backgroundLayerComboBox">
-        <property name="minimumSize">
-         <size>
-          <width>370</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>400</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="showCrs">
-         <bool>true</bool>
+         <string>Background layer(s)</string>
         </property>
        </widget>
       </item>
@@ -376,7 +363,7 @@
            <enum>Qt::NoFocus</enum>
           </property>
           <property name="text">
-           <string>Transformed layer</string>
+           <string>Transformed layer(s)</string>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -412,6 +399,22 @@
         </item>
        </layout>
       </item>
+      <item row="0" column="1">
+       <widget class="QListWidget" name="backgroundLayersListWidget">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+          <horstretch>30</horstretch>
+          <verstretch>75</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>400</width>
+          <height>75</height>
+         </size>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </widget>
@@ -432,6 +435,130 @@
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
+      <item row="2" column="1">
+       <widget class="QgsFieldComboBox" name="mFieldComboBox_2">
+        <property name="minimumSize">
+         <size>
+          <width>400</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>400</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_32">
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>320</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Translated points layer id field</string>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="label_14">
+        <property name="minimumSize">
+         <size>
+          <width>140</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>270</width>
+          <height>60</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Output</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QgsMapLayerComboBox" name="pointLayerComboBox_2">
+        <property name="minimumSize">
+         <size>
+          <width>400</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>400</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="showCrs">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QgsFieldComboBox" name="mImageFieldComboBox_2">
+        <property name="minimumSize">
+         <size>
+          <width>400</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>400</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_16">
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>320</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Source points layer</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>30</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
       <item row="7" column="1">
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
@@ -443,7 +570,7 @@
            <enum>Qt::NoFocus</enum>
           </property>
           <property name="text">
-           <string>Transformed layer</string>
+           <string>Transformed layer(s)</string>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -472,8 +599,8 @@
         </item>
        </layout>
       </item>
-      <item row="2" column="1">
-       <widget class="QgsFieldComboBox" name="mFieldComboBox_2">
+      <item row="3" column="1">
+       <widget class="QgsMapLayerComboBox" name="imagePointLayerComboBox_2">
         <property name="minimumSize">
          <size>
           <width>400</width>
@@ -485,6 +612,78 @@
           <width>400</width>
           <height>16777215</height>
          </size>
+        </property>
+        <property name="showCrs">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_17">
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>320</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Path to a .csv document containing a time matrix between the points from the layer previously selected.</string>
+        </property>
+        <property name="text">
+         <string>Translated points layer</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" alignment="Qt::AlignHCenter">
+       <widget class="QLabel" name="label_12">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>320</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>The layer(s) to be deformed</string>
+        </property>
+        <property name="text">
+         <string>Background layer(s)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_15">
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+          <height>27</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>320</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Source points layer id field</string>
         </property>
        </widget>
       </item>
@@ -532,212 +731,19 @@
         </property>
        </widget>
       </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="label_14">
-        <property name="minimumSize">
-         <size>
-          <width>140</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>270</width>
-          <height>60</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Output</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" alignment="Qt::AlignHCenter">
-       <widget class="QLabel" name="label_12">
-        <property name="minimumSize">
-         <size>
-          <width>300</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>320</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>The layer to be deformed</string>
-        </property>
-        <property name="text">
-         <string>Background layer</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_17">
-        <property name="minimumSize">
-         <size>
-          <width>300</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>320</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Path to a .csv document containing a time matrix between the points from the layer previously selected.</string>
-        </property>
-        <property name="text">
-         <string>Translated points layer</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QgsMapLayerComboBox" name="pointLayerComboBox_2">
-        <property name="minimumSize">
-         <size>
-          <width>400</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>400</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="showCrs">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_16">
-        <property name="minimumSize">
-         <size>
-          <width>300</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>320</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Source points layer</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_15">
-        <property name="minimumSize">
-         <size>
-          <width>300</width>
-          <height>27</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>320</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Source points layer id field</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_32">
-        <property name="minimumSize">
-         <size>
-          <width>300</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>320</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Translated points layer id field</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QgsMapLayerComboBox" name="imagePointLayerComboBox_2">
-        <property name="minimumSize">
-         <size>
-          <width>400</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>400</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="showCrs">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="1">
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Fixed</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>50</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="4" column="1">
-       <widget class="QgsFieldComboBox" name="mImageFieldComboBox_2">
-        <property name="minimumSize">
-         <size>
-          <width>400</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>400</width>
-          <height>16777215</height>
-         </size>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
-       <widget class="QgsMapLayerComboBox" name="backgroundLayerComboBox_2">
+       <widget class="QListWidget" name="backgroundLayersListWidget_2">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+          <horstretch>30</horstretch>
+          <verstretch>75</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimumSize">
          <size>
           <width>400</width>
-          <height>0</height>
+          <height>75</height>
          </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>400</width>
-          <height>27</height>
-         </size>
-        </property>
-        <property name="showCrs">
-         <bool>true</bool>
         </property>
        </widget>
       </item>
@@ -789,7 +795,6 @@
  </customwidgets>
  <tabstops>
   <tabstop>gridTabWidget</tabstop>
-  <tabstop>backgroundLayerComboBox</tabstop>
   <tabstop>pointLayerComboBox</tabstop>
   <tabstop>mFieldComboBox</tabstop>
   <tabstop>matrixQgsFileWidget</tabstop>
@@ -799,7 +804,6 @@
   <tabstop>checkBoxImagePointLayer</tabstop>
   <tabstop>checkBoxSourceGrid</tabstop>
   <tabstop>checkBoxTransformedGrid</tabstop>
-  <tabstop>backgroundLayerComboBox_2</tabstop>
   <tabstop>pointLayerComboBox_2</tabstop>
   <tabstop>mFieldComboBox_2</tabstop>
   <tabstop>imagePointLayerComboBox_2</tabstop>

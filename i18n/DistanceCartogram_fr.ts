@@ -52,8 +52,8 @@
     </message>
     <message>
         <location filename="../dist_cartogram_dialog_baseUi.py" line="294"/>
-        <source>Background layer</source>
-        <translation>Couche à déformer</translation>
+        <source>Background layer(s)</source>
+        <translation>Couche(s) à déformer</translation>
     </message>
     <message>
         <location filename="../dist_cartogram_dialog_baseUi.py" line="279"/>
@@ -92,8 +92,8 @@
     </message>
     <message>
         <location filename="../dist_cartogram_dialog_baseUi.py" line="293"/>
-        <source>The layer to be deformed</source>
-        <translation>La couche à déformer</translation>
+        <source>The layer(s) to be deformed</source>
+        <translation>Couche(s) à déformer</translation>
     </message>
     <message>
         <location filename="../dist_cartogram_dialog_baseUi.py" line="287"/>

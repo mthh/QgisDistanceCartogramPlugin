@@ -186,7 +186,7 @@ class DistCartogramWorker(QObject):
                 trans_grid_layer = None
 
             self.resultComplete.emit(
-                transformed_layers[0],
+                transformed_layers,
                 source_grid_layer,
                 trans_grid_layer,
             )
