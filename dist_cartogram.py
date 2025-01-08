@@ -32,7 +32,6 @@ from PyQt5.QtCore import (
     QThread,
     QTranslator,
     QUrl,
-    QVariant,
     qVersion,
 )
 from PyQt5.QtGui import QIcon, QDesktopServices
@@ -48,15 +47,10 @@ from PyQt5.QtWidgets import (
 from qgis.core import (
     Qgis,
     QgsCoordinateReferenceSystem,
-    QgsFeature,
-    QgsFeatureSink,
-    QgsGeometry,
     QgsMapLayerProxyModel,
     QgsMessageLog,
     QgsProject,
-    QgsVectorLayer,
     QgsMapLayerType,
-    QgsRectangle,
 )
 from qgis.gui import QgsMessageBar
 
@@ -69,11 +63,16 @@ from .dist_cartogram_dialog import DistCartogramDialog
 # Code for the small dialog displayed when sample dataset is added
 from .dist_cartogram_dataset_boxUi import DatasetDialog
 
-# Helpers to manipulate data to prepare for bidimensionnal regression
-from .grid import Point, extrapole_line
-
 # QThread worker to compute the cartogram in background
 from .worker import DistCartogramWorker
+
+# Helpers to manipulate data to prepare for bidimensionnal regression
+from .utils import (
+    create_image_points,
+    extract_source_image,
+    get_total_features,
+    get_merged_extent,
+)
 
 
 class DistanceCartogram:
@@ -154,8 +153,12 @@ class DistanceCartogram:
 
         def update_layers_in_list():
             # List the layers
-            layers = [l for l in QgsProject.instance().mapLayers().values() if l.type() == QgsMapLayerType.VectorLayer]
-            items = [f'{i.name()} [{i.crs().authid()}]' for i in layers]
+            layers = [
+                l
+                for l in QgsProject.instance().mapLayers().values()
+                if l.type() == QgsMapLayerType.VectorLayer
+            ]
+            items = [f"{i.name()} [{i.crs().authid()}]" for i in layers]
 
             # Clean the content of the widgets
             self.dlg.backgroundLayersListWidget.clear()
@@ -712,7 +715,9 @@ class DistanceCartogram:
             if self.dlg.gridTabWidget.currentIndex() == 0:
                 if self.time_matrix is None:
                     self.read_matrix(self.dlg.matrixQgsFileWidget.filePath())
-                background_layers = self.get_layers_selected('backgroundLayersListWidget')
+                background_layers = self.get_layers_selected(
+                    "backgroundLayersListWidget"
+                )
                 source_layer = self.dlg.pointLayerComboBox.currentLayer()
                 id_ref_feature = self.dlg.refFeatureComboBox.currentText()
                 id_field = self.dlg.mFieldComboBox.currentField()
@@ -749,7 +754,7 @@ class DistanceCartogram:
                     image_to_use,
                     image_layer,
                     unused_points,
-                ) = get_image_points(
+                ) = create_image_points(
                     source_layer,
                     id_field,
                     mat_extract,
@@ -789,7 +794,9 @@ class DistanceCartogram:
                 )
 
             else:
-                background_layers = self.get_layers_selected('backgroundLayersListWidget_2')
+                background_layers = self.get_layers_selected(
+                    "backgroundLayersListWidget_2"
+                )
                 source_layer = self.dlg.pointLayerComboBox_2.currentLayer()
                 id_field_source = self.dlg.mFieldComboBox_2.currentField()
                 image_layer = self.dlg.imagePointLayerComboBox_2.currentLayer()
@@ -826,7 +833,9 @@ class DistanceCartogram:
 
                 self.updateProgressBar(5)
 
-                extent = get_merged_extent(background_layers + [source_layer, image_layer])
+                extent = get_merged_extent(
+                    background_layers + [source_layer, image_layer]
+                )
                 max_extent = (
                     extent.xMinimum(),
                     extent.yMinimum(),
@@ -840,149 +849,3 @@ class DistanceCartogram:
                     max_extent,
                     background_layers,
                 )
-
-
-def extract_source_image(source_lyr, image_lyr, id_source, id_image):
-    source_to_use = []
-    image_to_use = []
-    temp_source = []
-    temp_image = {}
-
-    for ft in source_lyr.getFeatures():
-        temp_source.append(
-            (ft[id_source], ft.geometry().__geo_interface__["coordinates"])
-        )
-
-    for ft in image_lyr.getFeatures():
-        temp_image[ft[id_image]] = ft.geometry().__geo_interface__["coordinates"]
-
-    for _id_source, geom_source in temp_source:
-        geom_image = temp_image.get(_id_source, None)
-        if not geom_image:
-            continue
-        source_to_use.append(Point(geom_source[0], geom_source[1]))
-        image_to_use.append(Point(geom_image[0], geom_image[1]))
-
-    return (source_to_use, image_to_use)
-
-
-def get_image_points(
-    source_layer,
-    id_field,
-    mat_extract,
-    id_ref_feature,
-    dest_idx,
-    factor,
-    display_image_points,
-):
-    type_id_field = [
-        i.typeName().lower()
-        for i in source_layer.fields().toList()
-        if i.name() == id_field
-    ][0]
-    source_layer_dict = {}
-
-    for ft in source_layer.getFeatures():
-        id_value = str(ft[id_field])
-        if id_value not in dest_idx:
-            continue
-        source_layer_dict[id_value] = {
-            "geometry": ft.geometry(),
-            "dist_euclidienne": None,
-            "deplacement": None,
-            "time": mat_extract[dest_idx[id_value]],
-        }
-    ref_geometry = source_layer_dict[id_ref_feature]["geometry"]
-    for ix in source_layer_dict.keys():
-        if ix == id_ref_feature:
-            continue
-        source_layer_dict[ix]["dist_euclidienne"] = ref_geometry.distance(
-            source_layer_dict[ix]["geometry"]
-        )
-        source_layer_dict[ix]["vitesse"] = (
-            source_layer_dict[ix]["dist_euclidienne"] / source_layer_dict[ix]["time"]
-        )
-    ref_vitesse = np.nanmean(
-        [i["vitesse"] for i in source_layer_dict.values() if "vitesse" in i]
-    )
-    for ix in source_layer_dict.keys():
-        if ix == id_ref_feature:
-            continue
-        source_layer_dict[ix]["deplacement"] = (
-            ref_vitesse / source_layer_dict[ix]["vitesse"]
-        )
-    source_to_use, image_to_use = [], []
-    unused_point = 0
-    res_geoms = []
-    ids = []
-    image_layer = None
-    coords = ref_geometry.__geo_interface__["coordinates"]
-    x1, y1 = coords[0], coords[1]
-    p1 = (x1, y1)
-    for ix in source_layer_dict.keys():
-        if ix == id_ref_feature:
-            ids.append(ix)
-            if display_image_points:
-                res_geoms.append(ref_geometry)
-            source_to_use.append(Point(x1, y1))
-            image_to_use.append(Point(x1, y1))
-            continue
-        item = source_layer_dict[ix]
-        deplacement = item["deplacement"]
-        if not item["geometry"].isNull() and not item["geometry"].isEmpty():
-            coords = item["geometry"].__geo_interface__["coordinates"]
-            if deplacement < 1:
-                deplacement = 1 + (deplacement - 1) * factor
-                li = QgsGeometry.fromWkt(
-                    """LINESTRING ({} {}, {} {})""".format(
-                        p1[0], p1[1], coords[0], coords[1]
-                    )
-                )
-                p = li.interpolate(deplacement * item["dist_euclidienne"])
-            else:
-                deplacement = 1 + (deplacement - 1) * factor
-                p2 = (coords[0], coords[1])
-                li = extrapole_line(p1, p2, 2 * deplacement)
-                p = li.interpolate(deplacement * item["dist_euclidienne"])
-            _coords = p.__geo_interface__["coordinates"]
-            ids.append(ix)
-            if display_image_points:
-                res_geoms.append(p)
-            source_to_use.append(Point(coords[0], coords[1]))
-            image_to_use.append(Point(_coords[0], _coords[1]))
-        else:
-            unused_point += 1
-
-    if display_image_points:
-        image_layer = QgsVectorLayer(
-            "Point?crs={}&field={}:{}".format(
-                source_layer.crs().authid(), id_field, type_id_field
-            ),
-            "image_layer",
-            "memory",
-        )
-
-        image_layer.startEditing()
-        image_layer.setCrs(source_layer.crs())
-
-        for ix, geom in zip(ids, res_geoms):
-            feature = QgsFeature()
-            feature.setGeometry(geom)
-            feature.setAttributes([QVariant(ix)])
-            image_layer.addFeature(feature, QgsFeatureSink.FastInsert)
-        image_layer.commitChanges()
-
-    return (source_to_use, image_to_use, image_layer, unused_point)
-
-
-def get_merged_extent(layers):
-    extent = QgsRectangle()
-    for layer in layers:
-        extent.combineExtentWith(layer.extent())
-    return extent
-
-def get_total_features(layers):
-    total = 0
-    for layer in layers:
-        total += layer.featureCount()
-    return total

@@ -77,7 +77,9 @@ class DistCartogramWorker(QObject):
                 ref_geom = ft.geometry()
                 ref_coords = ref_geom.__geo_interface__["coordinates"]
                 if ref_geom.__geo_interface__["type"] == "Point":
-                    new_geom = QgsGeometry.fromPointXY(QgsPointXY(*self.g._interp_point(*ref_coords)))
+                    new_geom = QgsGeometry.fromPointXY(
+                        QgsPointXY(*self.g._interp_point(*ref_coords))
+                    )
                 elif ref_geom.__geo_interface__["type"] == "MultiPoint":
                     new_geom = QgsGeometry.fromMultiPointXY(
                         [
@@ -155,6 +157,7 @@ class DistCartogramWorker(QObject):
 
     def run(self):
         try:
+
             def _get_inter_nb_iter(coef_iter):
                 return int(coef_iter * sqrt(len(self.src_pts)))
 

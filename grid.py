@@ -1,16 +1,4 @@
 from math import ceil, sqrt, pow as m_pow, asin, sin, cos, radians
-from qgis.core import QgsGeometry
-
-
-def extrapole_line(p1, p2, ratio):
-    return QgsGeometry.fromWkt(
-        """LINESTRING ({} {}, {} {})""".format(
-            p1[0],
-            p1[1],
-            p1[0] + ratio * (p2[0] - p1[0]),
-            p1[1] + ratio * (p2[1] - p1[1]),
-        )
-    )
 
 
 class Node:
@@ -34,23 +22,10 @@ class Point:
     def to_xy(self):
         return (self.x, self.y)
 
-    def geo_distance(self, other):
-        return haversine(self.x, self.y, other.x, other.y)
-
     def distance(self, other):
         a = self.x - other.x
         b = self.y - other.y
         return sqrt(a * a + b * b)
-
-
-def haversine(lon1, lat1, lon2, lat2):
-    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
-    c = 2 * asin(sqrt(a))
-    r = 6371
-    return c * r
 
 
 class Rectangle2D:
@@ -87,6 +62,7 @@ class Rectangle2D:
     @staticmethod
     def from_bbox(bbox):
         return Rectangle2D(bbox[3] - bbox[1], bbox[2] - bbox[0], bbox[0], bbox[1])
+
 
 def getBoundingRect(points):
     minx = float("inf")
