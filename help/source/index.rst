@@ -13,21 +13,24 @@ DistanceCartogram QGIS Plugin Documentation
 
 Introduction
 =================
-DistanceCartogram aims to create what is often defined as a **distance cartogram**.
 
-This is done by showing (on background(s) layer(s), such as the territorial divisions of the study zone) the local
-deformations (calculated using Waldo Tobler's bidimensional regression) to fit image points to source points.
+**DistanceCartogram QGIS plugin** aims to create what is often defined as a **distance cartogram**.
+
+This is done by extending (by interpolation) to the layer(s) of the study area (territorial divisions, network...) the
+local displacement between the source coordinates and the image coordinates, derived from the distances between each pair
+of homologous points (source / image points).
 
 The relation between the source points and the image points must depend on the studied theme: positions in access time or estimated positions in spatial cognition for example.
 
-**DistanceCartogram QGIS plugin** allows to create distance cartograms in two ways:
+**DistanceCartogram QGIS plugin** is currently available in two languages (English and French) and allows you to create distance cartograms in two ways:
 
-* by providing a **layer of points** and a **time matrix between them** (used to create the image points layer)
-* by providing **2 layers of related points** : the source points and the image points.
+* by providing **2 layers of homologous points** : the source points and the image points,
+* by providing a **layer of points** and the durations between a reference point and the other points of the layer (used to create the image points layer).
+
 
 Notes:
 
-* This is a Darcy_ port regarding to the bidimensional regression and the backgrounds layers deformation. All credits for the contribution of the method goes to *Colette Cauvin* and for the reference implementation goes to *Gilles Vuidel*.
+* This is a port of Darcy_ software regarding the bidimensional regression and the backgrounds layers deformation. All credits goes to *Waldo Tobler* and *Colette Cauvin* for the contribution of the method and to *Gilles Vuidel* for the reference implementation.
 * The way the points are moved from the time matrix is quite simple and is explained below. Other methods exists and could be implemented (both in this plugin or by the user while preparing its dataset).
 
 
@@ -83,7 +86,7 @@ Points displacement from time matrix
 =========================================
 
 The method we propose allows the use of a travel time matrix to move the points of the dataset around a reference point (whose location will remain unchanged).
-The calculation for calculating the new position of the points is done in several steps:
+The calculation of the new position of the points is done in several steps:
 
 * Calculation of the Euclidean distance between the reference point (*labeled* **64445** *in our example*) and each of the other points.
 * Use of travel times and this distance to calculate a speed between the reference point and each of the other points
