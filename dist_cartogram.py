@@ -72,7 +72,7 @@ from .dist_cartogram_dataset_boxUi import DatasetDialog
 # Helpers to manipulate data to prepare for bidimensionnal regression
 from .grid import Point, extrapole_line
 
-# QThread worker to compute the cartogram in babkground
+# QThread worker to compute the cartogram in background
 from .worker import DistCartogramWorker
 
 
@@ -680,6 +680,7 @@ class DistanceCartogram:
             self.fill_file_widget_with_sample_value = False
             csv_path = os.path.join(self.plugin_dir, "data", "mat.csv")
             self.dlg.matrixQgsFileWidget.setFilePath(csv_path)
+            self.dlg.mFieldComboBox.setField("NOM_COM")
         # ...
         self.reset_fields()
         # Run the dialog event loop
