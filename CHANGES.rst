@@ -1,6 +1,15 @@
 Changes
 =======
 
+0.7 (2025-01-08)
+----------------
+
+- Replace median with mean for computing the displacement of points for unipolar distance cartogram (from a layer of points and a duration matrix).
+
+- Enable the deformation of multiple background layers (previously only one background layer was allowed).
+
+- Improve wording in the README and in the documentation.
+
 0.6 (2024-12-09)
 ----------------
 
