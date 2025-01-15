@@ -19,12 +19,11 @@ The relation between the source points and the image points must depend on the s
 
 ![png2](help/source/img/cartogram-train.png)
 
-Note about the method:
+## About the method
 
-> This is a port of [Darcy](https://thema.univ-fcomte.fr/productions/software/darcy/) software regarding the bidimensional regression and the backgrounds layers deformation.  
-All credits goes to **Waldo Tobler** *(University of California, Santa Barbara)* and **Colette Cauvin** *(Théma - Univ. Franche-Comté)* and for the reference Java implementation goes to **Gilles Vuidel** *(Théma - Univ. Franche-Comté)*.
+This plugin is a port of [Darcy](https://thema.univ-fcomte.fr/productions/software/darcy/) software regarding the bidimensional regression and the backgrounds layers deformation.  
 
-for the contribution of the method and to *Gilles Vuidel* for the reference implementation.
+All credit for the contribution of the methode goes to **Waldo Tobler** *(University of California, Santa Barbara)* and **Colette Cauvin** *(Théma - Univ. Franche-Comté)* and for the reference Java implementation goes to **Gilles Vuidel** *(Théma - Univ. Franche-Comté)*.
 
 ## Installation
 
