@@ -30,7 +30,7 @@ The relation between the source points and the image points must depend on the s
 
 Notes:
 
-* This is a port of Darcy_ software regarding the bidimensional regression and the backgrounds layers deformation. All credits goes to *Waldo Tobler* and *Colette Cauvin* for the contribution of the method and to *Gilles Vuidel* for the reference implementation.
+* This is a port of Darcy_ software regarding the bidimensional regression and the backgrounds layers deformation. All credit goes to *Waldo Tobler* and *Colette Cauvin* for the contribution of the method and to *Gilles Vuidel* for the reference implementation.
 * The way the points are moved from the time matrix is quite simple and is explained below. Other methods exists and could be implemented (both in this plugin or by the user while preparing its dataset).
 
 
