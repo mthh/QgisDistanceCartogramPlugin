@@ -428,13 +428,14 @@ class DistanceCartogram:
             with open(filepath, "r") as dest_f:
                 data_iter = csv.reader(dest_f, quotechar='"')
                 header = next(data_iter)
-                zz = 0
+
                 for i, _id in enumerate(header):
-                    if i == 0 and _id == "":
-                        zz = -1
+                    if i == 0:
                         continue
-                    col_ix[str(_id)] = i + zz
+                    col_ix[str(_id)] = i - 1
+
                 d = []
+
                 for i, data in enumerate(data_iter):
                     d.append(data[1:])
                     line_ix[data[0]] = i
