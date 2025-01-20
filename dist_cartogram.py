@@ -106,6 +106,9 @@ class DistanceCartogram:
         # Create the dialog (after translation) and keep reference
         self.dlg = DistCartogramDialog()
 
+        self.dlg.setMinimumSize(self.dlg.width(), self.dlg.height())
+        self.dlg.setMaximumSize(self.dlg.width(), self.dlg.height())
+
         self.dlg.msg_bar = QgsMessageBar()
         self.dlg.msg_bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         self.dlg.bottomVerticalLayout.addWidget(self.dlg.msg_bar)
