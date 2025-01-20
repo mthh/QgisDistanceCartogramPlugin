@@ -1,12 +1,17 @@
 Changes
 =======
 
-0.8 (unreleased)
+0.8 (2025-01-20)
 ----------------
 
 - Fix the reading of the CSV durations matrix when the first cell isn't empty.
 
 - Fix the listening of changes in the QlistWidget that allows the user to select the layer to deform.
+
+- Improve progression of the progress bar during the cartogram creation.
+
+- Make the main QDialog non-resizable (since the content does not resize according to the size of the QDialog).
+
 
 0.7 (2025-01-08)
 ----------------
@@ -16,6 +21,7 @@ Changes
 - Enable the deformation of multiple background layers (previously only one background layer was allowed).
 
 - Improve wording in the README and in the documentation.
+
 
 0.6 (2024-12-09)
 ----------------
