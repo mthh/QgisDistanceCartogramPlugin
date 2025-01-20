@@ -45,7 +45,15 @@ class DistCartogramWorker(QObject):
     status = pyqtSignal(str)
 
     def __init__(
-        self, src_pts, image_pts, precision, extent, layers_to_transform, to_display, tr, total_features,
+        self,
+        src_pts,
+        image_pts,
+        precision,
+        extent,
+        layers_to_transform,
+        to_display,
+        tr,
+        total_features,
     ):
         QObject.__init__(self)
 

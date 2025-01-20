@@ -609,9 +609,18 @@ class DistanceCartogram:
 
         self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(result)
 
-    def startWorker(self, src_pts, img_pts, precision, max_extent, layers, total_features):
+    def startWorker(
+        self, src_pts, img_pts, precision, max_extent, layers, total_features
+    ):
         worker = DistCartogramWorker(
-            src_pts, img_pts, precision, max_extent, layers, self.display, self.tr, total_features,
+            src_pts,
+            img_pts,
+            precision,
+            max_extent,
+            layers,
+            self.display,
+            self.tr,
+            total_features,
         )
         thread = QThread()
         worker.moveToThread(thread)
