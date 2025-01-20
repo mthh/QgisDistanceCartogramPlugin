@@ -114,7 +114,9 @@ class DistanceCartogram:
         self.time_matrix = None
 
         # Params for first tab:
-        self.dlg.backgroundLayersListWidget.currentRowChanged.connect(self.state_ok_button)
+        self.dlg.backgroundLayersListWidget.currentRowChanged.connect(
+            self.state_ok_button
+        )
         self.dlg.backgroundLayersListWidget.itemChanged.connect(self.state_ok_button)
         self.dlg.pointLayerComboBox.setFilters(QgsMapLayerProxyModel.PointLayer)
         self.dlg.pointLayerComboBox.layerChanged.connect(self.fill_field_combo_box)
@@ -129,7 +131,9 @@ class DistanceCartogram:
         self.dlg.refFeatureComboBox.activated.connect(self.state_ok_button)
 
         # Params for second tab:
-        self.dlg.backgroundLayersListWidget_2.currentRowChanged.connect(self.state_ok_button)
+        self.dlg.backgroundLayersListWidget_2.currentRowChanged.connect(
+            self.state_ok_button
+        )
         self.dlg.backgroundLayersListWidget_2.itemChanged.connect(self.state_ok_button)
         self.dlg.pointLayerComboBox_2.setFilters(QgsMapLayerProxyModel.PointLayer)
         self.dlg.pointLayerComboBox_2.layerChanged.connect(
@@ -158,9 +162,9 @@ class DistanceCartogram:
         def update_layers_in_list():
             # List the layers
             layers = [
-                l
-                for l in QgsProject.instance().mapLayers().values()
-                if l.type() == QgsMapLayerType.VectorLayer
+                layer
+                for layer in QgsProject.instance().mapLayers().values()
+                if layer.type() == QgsMapLayerType.VectorLayer
             ]
             items = [f"{i.name()} [{i.crs().authid()}]" for i in layers]
 
@@ -549,7 +553,7 @@ class DistanceCartogram:
             d = self.dlg.mFieldComboBox.currentIndex()
             e = self.dlg.matrixQgsFileWidget.filePath()
 
-            if a == -1 or b == False:
+            if a == -1 or not b:
                 result = False
 
             else:
@@ -579,7 +583,7 @@ class DistanceCartogram:
             e = self.dlg.mImageFieldComboBox_2.currentIndex()
 
             if (
-                a == False
+                not a
                 or b == -1
                 or c == -1
                 or d == -1

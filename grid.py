@@ -1,5 +1,6 @@
 from math import ceil, sqrt, pow as m_pow
 
+
 class Node:
     __slots__ = ["weight", "i", "j", "source", "interp"]
 
