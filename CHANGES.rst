@@ -1,6 +1,13 @@
 Changes
 =======
 
+0.8 (unreleased)
+----------------
+
+- Fix the reading of the CSV durations matrix when the first cell isn't empty.
+
+- Fix the listening of changes in the QlistWidget that allows the user to select the layer to deform.
+
 0.7 (2025-01-08)
 ----------------
 
