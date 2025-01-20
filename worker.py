@@ -45,7 +45,7 @@ class DistCartogramWorker(QObject):
     status = pyqtSignal(str)
 
     def __init__(
-        self, src_pts, image_pts, precision, extent, layers_to_transform, to_display, tr
+        self, src_pts, image_pts, precision, extent, layers_to_transform, to_display, tr, total_features,
     ):
         QObject.__init__(self)
 
@@ -56,6 +56,7 @@ class DistCartogramWorker(QObject):
         self.layers_to_transform = layers_to_transform
         self.to_display = to_display
         self.tr = tr
+        self.total_features = total_features
 
     def get_transformed_layers(self):
         transformed_layers = []
@@ -163,14 +164,18 @@ class DistCartogramWorker(QObject):
 
             self.status.emit(self.tr("Creation of interpolation grid..."))
             self.g = Grid(self.src_pts, self.precision, self.extent)
+
             self.status.emit(self.tr("Interpolation process..."))
-            self.progress.emit(((self.precision * len(self.image_pts)) / 3))
+            self.progress.emit(int(0.03 * self.total_features))
             self.g.interpolate(self.image_pts, _get_inter_nb_iter(4))
-            self.progress.emit(((self.precision * len(self.image_pts)) / 3))
+
+            self.progress.emit(int(0.07 * self.total_features))
             self.status.emit(self.tr("Transforming layers..."))
             transformed_layers = self.get_transformed_layers()
 
             self.status.emit(self.tr("Preparing results for displaying..."))
+            self.progress.emit(int(0.02 * self.total_features))
+
             if self.to_display["source_grid"]:
                 polys = self.g._get_grid_coords("source")
                 source_grid_layer = make_grid_layer(
@@ -179,7 +184,8 @@ class DistCartogramWorker(QObject):
             else:
                 source_grid_layer = None
 
-            self.progress.emit(5)
+            self.progress.emit(int(0.03 * self.total_features))
+
             if self.to_display["trans_grid"]:
                 polys = self.g._get_grid_coords("interp")
                 trans_grid_layer = make_grid_layer(

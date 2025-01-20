@@ -606,9 +606,9 @@ class DistanceCartogram:
 
         self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(result)
 
-    def startWorker(self, src_pts, img_pts, precision, max_extent, layers):
+    def startWorker(self, src_pts, img_pts, precision, max_extent, layers, total_features):
         worker = DistCartogramWorker(
-            src_pts, img_pts, precision, max_extent, layers, self.display, self.tr
+            src_pts, img_pts, precision, max_extent, layers, self.display, self.tr, total_features,
         )
         thread = QThread()
         worker.moveToThread(thread)
@@ -737,13 +737,7 @@ class DistanceCartogram:
 
                 total_features = get_total_features(background_layers)
 
-                self.progressBar.setMaximum(
-                    int(
-                        15
-                        + total_features
-                        + (source_layer.featureCount() * precision) / 1.5
-                    )
-                )
+                self.progressBar.setMaximum(int(0.20 * total_features + total_features))
 
                 self.display = {
                     "source_grid": self.dlg.checkBoxSourceGrid.isChecked(),
@@ -772,7 +766,7 @@ class DistanceCartogram:
                     deplacement_factor,
                     self.display["image_points"],
                 )
-                self.updateProgressBar(5)
+                self.updateProgressBar(int(0.05 * total_features))
                 if len(source_to_use) == 0 or len(image_to_use) == 0:
                     self.iface.messageBar().pushCritical(
                         self.tr("Error"),
@@ -800,6 +794,7 @@ class DistanceCartogram:
                     precision,
                     max_extent,
                     background_layers,
+                    total_features,
                 )
 
             else:
@@ -820,13 +815,7 @@ class DistanceCartogram:
 
                 total_features = get_total_features(background_layers)
 
-                self.progressBar.setMaximum(
-                    int(
-                        15
-                        + total_features
-                        + (precision * image_layer.featureCount()) / 1.5
-                    )
-                )
+                self.progressBar.setMaximum(int(0.20 * total_features + total_features))
 
                 if source_layer.featureCount() != image_layer.featureCount():
                     self.updateStatusMessage(
@@ -840,7 +829,7 @@ class DistanceCartogram:
                     source_layer, image_layer, id_field_source, id_field_image
                 )
 
-                self.updateProgressBar(5)
+                self.updateProgressBar(int(0.05 * total_features))
 
                 extent = get_merged_extent(
                     background_layers + [source_layer, image_layer]
@@ -857,4 +846,5 @@ class DistanceCartogram:
                     precision,
                     max_extent,
                     background_layers,
+                    total_features,
                 )
