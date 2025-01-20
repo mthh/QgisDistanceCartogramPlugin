@@ -114,6 +114,8 @@ class DistanceCartogram:
         self.time_matrix = None
 
         # Params for first tab:
+        self.dlg.backgroundLayersListWidget.currentRowChanged.connect(self.state_ok_button)
+        self.dlg.backgroundLayersListWidget.itemChanged.connect(self.state_ok_button)
         self.dlg.pointLayerComboBox.setFilters(QgsMapLayerProxyModel.PointLayer)
         self.dlg.pointLayerComboBox.layerChanged.connect(self.fill_field_combo_box)
 
@@ -127,6 +129,8 @@ class DistanceCartogram:
         self.dlg.refFeatureComboBox.activated.connect(self.state_ok_button)
 
         # Params for second tab:
+        self.dlg.backgroundLayersListWidget_2.currentRowChanged.connect(self.state_ok_button)
+        self.dlg.backgroundLayersListWidget_2.itemChanged.connect(self.state_ok_button)
         self.dlg.pointLayerComboBox_2.setFilters(QgsMapLayerProxyModel.PointLayer)
         self.dlg.pointLayerComboBox_2.layerChanged.connect(
             self.fill_field_combo_box_source
